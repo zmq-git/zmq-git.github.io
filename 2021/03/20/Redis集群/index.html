@@ -200,7 +200,7 @@
         </header>
 
         <div class="post-content">
-            <h1 id="Redis集群"><a href="#Redis集群" class="headerlink" title="Redis集群"></a>Redis集群</h1><h2 id="1-redis集群简介"><a href="#1-redis集群简介" class="headerlink" title="1.redis集群简介"></a>1.redis集群简介</h2><ul>
+            <h2 id="Redis集群"><a href="#Redis集群" class="headerlink" title="Redis集群"></a>Redis集群</h2><h3 id="1-redis集群简介"><a href="#1-redis集群简介" class="headerlink" title="1.redis集群简介"></a>1.redis集群简介</h3><ul>
 <li>是一个开源的key value存储系统，受到了广大互联网公司的青睐。redis3.0版本之前只支持单例模式，在3.0版本及以后才支持集群；</li>
 <li>redis集群采用P2P模式，是完全去中心化的，不存在中心节点或者代理节点；</li>
 <li>redis集群是没有统一的入口的，客户端（client）连接集群的时候连接集群中的任意节点（node）即可，集群内部的节点是相互通信的（PING-PONG机制），每个节点都是一个redis实例；</li>
@@ -209,7 +209,7 @@
 <li>那么为什么任意一个节点挂了（没有从节点）这个集群就挂了呢？ -&gt; 因为集群内置了16384个slot（哈希槽），并且把所有的物理节点映射到了这16384[0-16383]个slot上，或者说把这些slot均等的分配给了各个节点。当需要在Redis集群存放一个数据（key-value）时，redis会先对这个key进行crc16算法，然后得到一个结果。再把这个结果对16384进行求余，这个余数会对应[0-16383]其中一个槽，进而决定key-value存储到哪个节点中。所以一旦某个节点挂了，该节点对应的slot就无法使用，那么就会导致集群无法正常工作。</li>
 <li>综上所述，每个Redis集群理论上最多可以有16384个节点。</li>
 </ul>
-<h2 id="2-Redis集群的搭建"><a href="#2-Redis集群的搭建" class="headerlink" title="2.Redis集群的搭建"></a>2.Redis集群的搭建</h2><hr>
+<h3 id="2-Redis集群的搭建"><a href="#2-Redis集群的搭建" class="headerlink" title="2.Redis集群的搭建"></a>2.Redis集群的搭建</h3><hr>
 <p>Linux版本：CentOS7.6 x64<br>Redis版本：6.0.9</p>
 <hr>
 
