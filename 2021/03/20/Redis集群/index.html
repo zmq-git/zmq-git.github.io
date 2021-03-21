@@ -14,7 +14,7 @@
 
 
 
-<title>Redis | ZMQ&#39;BLOG</title>
+<title>Redis集群 | ZMQ&#39;BLOG</title>
 
 
 
@@ -109,11 +109,73 @@
             <div class="container">
     
     
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
 
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Redis</h1>
+            <h1 class="post-title">Redis集群</h1>
             
                 <div class="post-meta">
                     
@@ -138,35 +200,26 @@
         </header>
 
         <div class="post-content">
-            <p>redis</p>
+            <h1 id="Redis集群"><a href="#Redis集群" class="headerlink" title="Redis集群"></a>Redis集群</h1><h2 id="1-redis集群简介"><a href="#1-redis集群简介" class="headerlink" title="1.redis集群简介"></a>1.redis集群简介</h2><ul>
+<li>是一个开源的key value存储系统，受到了广大互联网公司的青睐。redis3.0版本之前只支持单例模式，在3.0版本及以后才支持集群；</li>
+<li>redis集群采用P2P模式，是完全去中心化的，不存在中心节点或者代理节点；</li>
+<li>redis集群是没有统一的入口的，客户端（client）连接集群的时候连接集群中的任意节点（node）即可，集群内部的节点是相互通信的（PING-PONG机制），每个节点都是一个redis实例；</li>
+<li>为了实现集群的高可用，即判断节点是否健康（能否正常使用），redis-cluster有这么一个投票容错机制：如果集群中超过半数的节点投票认为某个节点挂了，那么这个节点就挂了（fail）。这是判断节点是否挂了的方法；</li>
+<li>那么如何判断集群是否挂了呢? -&gt; 如果集群中任意一个节点挂了，而且该节点没有从节点（备份节点），那么这个集群就挂了。这是判断集群是否挂了的方法；</li>
+<li>那么为什么任意一个节点挂了（没有从节点）这个集群就挂了呢？ -&gt; 因为集群内置了16384个slot（哈希槽），并且把所有的物理节点映射到了这16384[0-16383]个slot上，或者说把这些slot均等的分配给了各个节点。当需要在Redis集群存放一个数据（key-value）时，redis会先对这个key进行crc16算法，然后得到一个结果。再把这个结果对16384进行求余，这个余数会对应[0-16383]其中一个槽，进而决定key-value存储到哪个节点中。所以一旦某个节点挂了，该节点对应的slot就无法使用，那么就会导致集群无法正常工作。</li>
+<li>综上所述，每个Redis集群理论上最多可以有16384个节点。</li>
+</ul>
+<h2 id="2-Redis集群的搭建"><a href="#2-Redis集群的搭建" class="headerlink" title="2.Redis集群的搭建"></a>2.Redis集群的搭建</h2><hr>
+<p>Linux版本：CentOS7.6 x64<br>Redis版本：6.0.9</p>
+<hr>
 
         </div>
 
         
             <section class="post-copyright">
                 
-                    <p class="copyright-item">
-                        <span>Author:</span>
-                        <span>zmq</span>
-                    </p>
                 
                 
-                    <p class="copyright-item">
-                        <span>Permalink:</span>
-                        <span><a href="http://zmq.cool/2021/03/20/Redis/">http://zmq.cool/2021/03/20/Redis/</a></span>
-                    </p>
-                
-                
-                    <p class="copyright-item">
-                        <span>License:</span>
-                        <span>Copyright (c) 2019 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
-                    </p>
-                
-                
-                     <p class="copyright-item">
-                         <span>Slogan:</span>
-                         <span>Do you believe in <strong>DESTINY</strong>?</span>
-                     </p>
                 
 
             </section>
@@ -191,7 +244,7 @@
         <section class="post-nav">
             
             
-            <a class="next" rel="next" href="/zmq-git.github.io/2021/03/20/hello-world%201111/">Hello World</a>
+            <a class="next" rel="next" href="/zmq-git.github.io/2021/03/19/linux%E7%B3%BB%E7%BB%9F%E6%90%AD%E5%BB%BARedis/">linux系统搭建Redis</a>
             
         </section>
 
