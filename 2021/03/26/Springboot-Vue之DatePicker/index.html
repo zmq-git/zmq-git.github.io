@@ -145,9 +145,7 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@DateTimeFormat(pattern &#x3D; &quot;yyyy-MM-dd HH:mm:ss&quot;)</span><br><span class="line">private Date startDate;</span><br></pre></td></tr></table></figure>
 
 <p>发现还是报错：</p>
-<blockquote>
-<p>Failed to convert from type [java.lang.String] to type [@org.springframework.format.annotation.DateTimeFormat java.util.Date] for value ‘“2021-03-10T06:09:01.563Z”</p>
-</blockquote>
+<p>Failed to convert from type [java.lang.String] to type[@org.springframework.format.annotation.DateTimeFormat java.util.Date] for value ‘“2021-03-10T06:09:01.563Z”</p>
 <p>表示无法将字符串转换为Date类型，查看日志发现前台传过来的格式并不是我在@DateTimeFormat 注解上pattern中的规定的格式 “2021-03-10T06:09:01.563Z”，而@DateTimeFormat 注解只能解析与它定义的格式相同的字符串，所以导致报错。在前台通过F12打印出日期，发现最终提交到后台的时间格式为Moment()，并不是String，解决办法：</p>
 <p>1.引入moment</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import moment from &#39;moment&#39;</span><br></pre></td></tr></table></figure>
