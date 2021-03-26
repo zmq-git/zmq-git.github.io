@@ -207,8 +207,15 @@
 <p>既然Object.java中定义了equals()方法，这就意味着所有的Java类都实现了equals()方法，所有的类都可以通过equals()去比较两个对象是否相等。 但是，我们已经说过，使用默认的“**equals()<strong>”方法，等价于“</strong>==**”方法。因此，我们通常会重写equals()方法：若两个对象的内容相等，则equals()方法返回true；否则，返回fasle。  </p>
 <p>下面根据“<strong>类是否覆盖equals()方法</strong>”，将它分为2类。<br>(01) 若某个类没有覆盖equals()方法，当它的通过equals()比较两个对象时，实际上是比较两个对象是不是同一个对象。这时，等价于通过“==”去比较这两个对象。<br>(02) 我们可以覆盖类的equals()方法，来让equals()通过其它方式比较两个对象是否相等。通常的做法是：若两个对象的内容相等，则equals()方法返回true；否则，返回fasle。</p>
 <p>java对equals()的要求，有以下几点：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">1. 对称性：如果x.equals(y)返回是&quot;true&quot;，那么y.equals(x)也应该返回是&quot;true&quot;。</span><br><span class="line">2. 反射性：x.equals(x)必须返回是&quot;true&quot;。</span><br><span class="line">3. 类推性：如果x.equals(y)返回是&quot;true&quot;，而且y.equals(z)返回是&quot;true&quot;，那么z.equals(x)也应该返回是&quot;true&quot;。</span><br><span class="line">4. 一致性：如果x.equals(y)返回是&quot;true&quot;，只要x和y内容一直不变，不管你重复x.equals(y)多少次，返回都是&quot;true&quot;。</span><br><span class="line">5. 非空性，x.equals(null)，永远返回是&quot;false&quot;；x.equals(和x不同类型的对象)永远返回是&quot;false&quot;。</span><br></pre></td></tr></table></figure>
-
+<blockquote>
+<ol>
+<li>对称性：如果x.equals(y)返回是”true”，那么y.equals(x)也应该返回是”true”。</li>
+<li>反射性：x.equals(x)必须返回是”true”。</li>
+<li>类推性：如果x.equals(y)返回是”true”，而且y.equals(z)返回是”true”，那么z.equals(x)也应该返回是”true”。</li>
+<li>一致性：如果x.equals(y)返回是”true”，只要x和y内容一直不变，不管你重复x.equals(y)多少次，返回都是”true”。</li>
+<li>非空性，x.equals(null)，永远返回是”false”；x.equals(和x不同类型的对象)永远返回是”false”。</li>
+</ol>
+</blockquote>
 <h2 id="hashCode-介绍"><a href="#hashCode-介绍" class="headerlink" title="hashCode()介绍:"></a>hashCode()介绍:</h2><p><code>hashCode()</code> 的作用是获取哈希码，也称为散列码；它实际上是返回一个 int 整数。这个哈希码的作用是确定该对象在哈希表中的索引位置。<code>hashCode()</code>定义在 JDK 的 <code>Object</code> 类中，这就意味着 Java 中的任何类都包含有 <code>hashCode()</code> 函数。另外需要注意的是： <code>Object</code> 的 hashcode 方法是本地方法，也就是用 c 语言或 c++ 实现的，该方法通常用来将对象的 内存地址 转换为整数之后返回。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">native</span> <span class="keyword">int</span> <span class="title">hashCode</span><span class="params">()</span></span>;Copy to clipboardErrorCopied</span><br></pre></td></tr></table></figure>
 

@@ -138,16 +138,16 @@
         </header>
 
         <div class="post-content">
-            <hr>
+            <blockquote>
 <p>最近在开发一个Springboot+Vue项目中，使用到Ant Design Vue中的日期选择框组件’DatePicker’，发现向后台提交数据时报错：<strong>Failed to convert property value of type ‘java.lang.String’ to required ‘Date’</strong></p>
-<hr>
+</blockquote>
 <p>一开始想到的是在实体类属性上添加@DateTimeFormat注解，@DatetimeFormat是将String转换成Date，一般前台给后台传值时用</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">@DateTimeFormat(pattern &#x3D; &quot;yyyy-MM-dd HH:mm:ss&quot;)</span><br><span class="line">private Date startDate;</span><br></pre></td></tr></table></figure>
 
 <p>发现还是报错：</p>
-<hr>
+<blockquote>
 <p>Failed to convert from type [java.lang.String] to type [@org.springframework.format.annotation.DateTimeFormat java.util.Date] for value ‘“2021-03-10T06:09:01.563Z”</p>
-<hr>
+</blockquote>
 <p>表示无法将字符串转换为Date类型，查看日志发现前台传过来的格式并不是我在@DateTimeFormat 注解上pattern中的规定的格式 “2021-03-10T06:09:01.563Z”，而@DateTimeFormat 注解只能解析与它定义的格式相同的字符串，所以导致报错。在前台通过F12打印出日期，发现最终提交到后台的时间格式为Moment()，并不是String，解决办法：</p>
 <p>1.引入moment</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">import moment from &#39;moment&#39;</span><br></pre></td></tr></table></figure>
