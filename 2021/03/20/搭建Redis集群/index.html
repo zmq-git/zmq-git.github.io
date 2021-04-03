@@ -213,7 +213,7 @@
 <p>Linux版本：CentOS7.6 x64<br>Redis版本：6.0.9</p>
 </blockquote>
 <h4 id="所需环境"><a href="#所需环境" class="headerlink" title="所需环境"></a>所需环境</h4><p>Redis集群至少需要3个节点，因为投票容错机制要求超过半数节点认为某个节点挂了该节点才是挂了，所以2个节点无法构成集群。要保证集群的高可用，需要每个节点都有从节点，也就是备份节点，所以Redis集群至少需要6台服务器。这里搭建的是伪分布式集群，即一台服务器虚拟运行6个redis实例，修改端口号为（7001-7006）。</p>
-<h4 id="搭建步骤"><a href="#搭建步骤" class="headerlink" title="搭建步骤"></a>搭建步骤</h4><p>1.在/usr/local下创建redis-cluster目录，用户存放集群节点</p>
+<h4 id="搭建步骤"><a href="#搭建步骤" class="headerlink" title="搭建步骤"></a>搭建步骤</h4><p>1.在/usr/local下创建redis-cluster目录，用来存放集群节点</p>
 <p>2.将redis安装目录中bin目录下面的所有文件拷贝一份到/usr/local/redis-cluster/redis1目录下</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis&#x2F;bin&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1</span><br></pre></td></tr></table></figure>
 
@@ -236,11 +236,20 @@
 <p>执行shell脚本：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;start-all.sh</span><br></pre></td></tr></table></figure>
 
-<p>至此6个redis节点启动成功。</p>
-<p>7.执行集群相关命令，指定redis集群节点的ip和端口号，进入到任意一个redis的bin目录下，都可执行。，一个3主3从的redis集群就搭建完成了。</p>
+<p>6个redis节点是否启动成功，可以使用 ps aux|grep redis 命令查看：</p>
+<p><img src="image-20210403210537175.png" alt="image-20210403210537175"></p>
+<p>7.执行集群相关命令，指定redis集群节点的ip和端口号，进入到任意一个redis的bin目录下，都可执行。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;redis-cli --cluster create 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006 --cluster-replicas 1</span><br></pre></td></tr></table></figure>
 
-<p>上面命令中的1代表主节点和从节点的比值是多少，我们是3主3从，所以这个比值是1，而且前三个一定是主节点，redis就是这样规定的。</p>
+<p>ps:上面命令中的1代表主节点和从节点的比值是多少，我们是3主3从，所以这个比值是1，而且前三个一定是主节点，redis就是这样规定的。</p>
+<p>执行效果如图：</p>
+<p><img src="image-20210403211027943.png" alt="image-20210403211027943"></p>
+<p>至此，Redi集群搭建成功！上面这个图显示了每个节点所分配的slots（哈希槽），这里总共6个节点，其中3个是从节点，所以3个主节点分别映射了0-5460、5461-10922、10933-16383solts。</p>
+<p>最后连接集群节点，连接任意一个即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;redis-cli -p 7001  -c</span><br></pre></td></tr></table></figure>
+
+<p>ps:一定要加上-c，不然节点之间是无法自动跳转的！如下图可以看到，存储的数据（key-value）是均匀分配到不同的节点的：</p>
+<p><img src="image-20210403211837365.png" alt="image-20210403211837365"></p>
 
         </div>
 
