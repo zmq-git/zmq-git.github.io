@@ -212,6 +212,35 @@
 <h3 id="Redis集群的搭建"><a href="#Redis集群的搭建" class="headerlink" title="Redis集群的搭建"></a>Redis集群的搭建</h3><blockquote>
 <p>Linux版本：CentOS7.6 x64<br>Redis版本：6.0.9</p>
 </blockquote>
+<h4 id="所需环境"><a href="#所需环境" class="headerlink" title="所需环境"></a>所需环境</h4><p>Redis集群至少需要3个节点，因为投票容错机制要求超过半数节点认为某个节点挂了该节点才是挂了，所以2个节点无法构成集群。要保证集群的高可用，需要每个节点都有从节点，也就是备份节点，所以Redis集群至少需要6台服务器。这里搭建的是伪分布式集群，即一台服务器虚拟运行6个redis实例，修改端口号为（7001-7006）。</p>
+<h4 id="搭建步骤"><a href="#搭建步骤" class="headerlink" title="搭建步骤"></a>搭建步骤</h4><p>1.在/usr/local下创建redis-cluster目录，用户存放集群节点</p>
+<p>2.将redis安装目录中bin目录下面的所有文件拷贝一份到/usr/local/redis-cluster/redis1目录下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis&#x2F;bin&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1</span><br></pre></td></tr></table></figure>
+
+<p>3.删除redis1目录下的快照文件dump.rdb，并且修改该目录下的redis.conf文件，具体修改两处地方：一是端口号修改为7001:</p>
+<p><img src="image-20210403180958507.png" alt="image-20210403180958507"></p>
+<p>二是开启集群创建模式,cluster-enabled yes 的注释打开:</p>
+<p><img src="image-20210403181202527.png" alt="image-20210403181202527"></p>
+<p>4.将redis1下的文件复制五份到redis2-redis6中</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis2</span><br><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis3</span><br><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis4</span><br><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis5</span><br><span class="line">cp -r &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis1&#x2F; &#x2F;usr&#x2F;local&#x2F;redis-cluster&#x2F;redis6</span><br></pre></td></tr></table></figure>
+
+<p>创建完后，如图所示:</p>
+<p><img src="image-20210403181535677.png" alt="image-20210403181535677"></p>
+<p>5.分别修改redis2-redis6下的redis.conf文件端口号为7002-7006</p>
+<p>6.启动所有的redis节点，这里创建一个shell脚本 touch start-all.sh ，用于批量启动所有的redis节点，文件内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">cd redis1</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br><span class="line">cd redis2</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br><span class="line">cd redis3</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br><span class="line">cd redis4</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br><span class="line">cd redis5</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br><span class="line">cd redis6</span><br><span class="line">.&#x2F;redis-server redis.conf</span><br><span class="line">cd ..</span><br></pre></td></tr></table></figure>
+
+<p>创建好启动脚本文件之后，需要修改该脚本的权限，使之能够执行，指令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chmod +x start-all.sh</span><br></pre></td></tr></table></figure>
+
+<p>执行shell脚本：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;start-all.sh</span><br></pre></td></tr></table></figure>
+
+<p>至此6个redis节点启动成功。</p>
+<p>7.执行集群相关命令，指定redis集群节点的ip和端口号，进入到任意一个redis的bin目录下，都可执行。，一个3主3从的redis集群就搭建完成了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">.&#x2F;redis-cli --cluster create 127.0.0.1:7001 127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 127.0.0.1:7006 --cluster-replicas 1</span><br></pre></td></tr></table></figure>
+
+<p>上面命令中的1代表主节点和从节点的比值是多少，我们是3主3从，所以这个比值是1，而且前三个一定是主节点，redis就是这样规定的。</p>
 
         </div>
 
