@@ -212,18 +212,9 @@
 <p><img src="image-20210405100732772.png" alt="image-20210405100732772"></p>
 <h3 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h3><p>Mybatis二级缓存的作用域是同一个Mapper，二级缓存开启后，同一个namespace下的所有操作语句，都影响着同一个Cache，即二级缓存被多个SqlSession共享，是一个全局的变量。所以二级存储也称之为<code>namespace</code>缓存！二级缓存默认也是开启的，可以修改配置文件mybatis-config.xml设置&lt;setting name=”cacheEnabled”value=”true”/&gt;，默认是true，即所说的默认是开启的。</p>
 <p>ps：MyBatis默认实现的一二级缓存是使用HashMap存储的。只有当sqlSession关闭之后，该sqlSession的查询结果才会存入二级缓存中。</p>
-<p>在开启二级缓存的情况下：</p>
-<p>在同一个Mapper二级缓存里面，执行多次sql语句的情况是：首先查找二级缓存里面是否有数据，如果没有就找一级缓存，再没有，才会查找数据库。</p>
-<p>在二级缓存没有开启的情况下：</p>
-<p>查找数据的顺序是：查看一级缓存里面是否能够找到，找不到就在数据库里面找！！</p>
 <h4 id="二级缓存的使用"><a href="#二级缓存的使用" class="headerlink" title="二级缓存的使用"></a>二级缓存的使用</h4><p>1.修改配置文件mybatis-config.xml加入&lt;setting name=”cacheEnabled”value=”true”/&gt;，由于默认是true，所以不添加也可以。</p>
 <p>2.在mapper.xml中开启二缓存，mapper.xml下的sql执行完成会存储到它的缓存区,如：</p>
 <p><img src="image-20210405101604917.png" alt="image-20210405101604917"></p>
-<p>（1）当为select语句时：</p>
-<p>flushCache默认为false，表示任何时候语句被调用，都不会去清空本地缓存和二级缓存。</p>
-<p>useCache默认为true，表示会将本条语句的结果进行二级缓存。</p>
-<p>（2）当为insert、update、delete语句时：</p>
-<p>flushCache默认为true，表示任何时候语句被调用，都会导致本地缓存和二级缓存被清空。</p>
 <p>3.对应的pojo实现序列化(implements Serializable)。</p>
 <p>这里使用两个不同的sqlSession去获取mapper对象，调用同一个查询方法：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">       InputStream inputStream &#x3D; null;</span><br><span class="line">       SqlSession sqlSession1 &#x3D; null;</span><br><span class="line">       SqlSession sqlSession2 &#x3D; null;</span><br><span class="line">       try &#123;</span><br><span class="line">           inputStream &#x3D; Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);</span><br><span class="line">           SqlSessionFactory sqlSessionFactory &#x3D; new SqlSessionFactoryBuilder().build(inputStream);</span><br><span class="line">           sqlSession1 &#x3D; sqlSessionFactory.openSession();</span><br><span class="line">           sqlSession2 &#x3D; sqlSessionFactory.openSession();</span><br><span class="line">           UserDao userDao1 &#x3D; sqlSession1.getMapper(UserDao.class);</span><br><span class="line">           UserDao userDao2 &#x3D; sqlSession2.getMapper(UserDao.class);</span><br><span class="line">           System.out.println(&quot;第一次查询&quot;);</span><br><span class="line">           List&lt;User&gt; user1 &#x3D; userDao1.getAllUser();</span><br><span class="line">           for (User user : user1) &#123;</span><br><span class="line">               System.out.println(user);</span><br><span class="line">           &#125;</span><br><span class="line">           System.out.println(&quot;第二次查询&quot;);</span><br><span class="line">           List&lt;User&gt; user2 &#x3D; userDao2.getAllUser();</span><br><span class="line">           for (User user : user2) &#123;</span><br><span class="line">               System.out.println(user);</span><br><span class="line">           &#125;</span><br><span class="line">           System.out.println(&quot;是同一个对象:&quot;+(user1&#x3D;&#x3D;user2));</span><br><span class="line">       &#125; catch (Exception e) &#123;</span><br><span class="line">           e.printStackTrace();</span><br><span class="line">       &#125; finally &#123;</span><br><span class="line">           closeResource(inputStream,sqlSession1,sqlSession2);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
@@ -237,6 +228,15 @@
 <p>readOnly 为只读属性， 默认为 false</p>
 <p>false: 可读写， 在创建对象时， 会通过反序列化得到缓存对象的拷贝。 因此在速度上会相对慢一点， 但重在安全。</p>
 <p>true: 只读， 只读的缓存会给所有调用者返回缓存对象的相同实例。 因此性能很好， 但如果修改了对象， 有可能会导致程序出问题。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1.在开启二级缓存的情况下：</p>
+<p>在同一个Mapper二级缓存里面，执行多次sql语句的情况是：首先查找二级缓存里面是否有数据，如果没有就找一级缓存，再没有，才会查找数据库。</p>
+<p>2.在二级缓存没有开启的情况下：</p>
+<p>查找数据的顺序是：查看一级缓存里面是否能够找到，找不到就在数据库里面找！！</p>
+<p>3.当为select语句时：</p>
+<p>flushCache默认为false，表示任何时候语句被调用，都不会去清空本地缓存和二级缓存。</p>
+<p>useCache默认为true，表示会将本条语句的结果进行二级缓存。</p>
+<p>4.当为insert、update、delete语句时：</p>
+<p>flushCache默认为true，表示任何时候语句被调用，都会导致本地缓存和二级缓存被清空。</p>
 <h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>由于在更新时会刷新缓存， 因此需要注意使用场合：查询频率很高， 更新频率很低时使用， 即经常使用 select, 相对较少使用delete, insert, update。</p>
 <p>缓存是以 namespace 为单位的，不同 namespace 下的操作互不影响。但刷新缓存是刷新整个 namespace 的缓存， 也就是你 update 了一个， 则整个缓存都刷新了。</p>
 <p>一二级缓存都可能会导致脏读（缓存不一样），二级缓存中，最好在 「只有单表操作」 的表的 namespace 使用缓存， 而且对该表的操作都在这个 namespace 中。 否则可能会出现数据不一致的情况（脏读）。</p>
