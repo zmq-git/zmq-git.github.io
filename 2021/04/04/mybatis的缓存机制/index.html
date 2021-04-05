@@ -210,7 +210,7 @@
 
 <p>从下图可以看出，第一次查询打印了sql,说明第一次查询去数据库中查出来了数据，第二次查询没有去数据库中查询数据，而是直接从缓存中获取。并且两次查询的结果是同一个对象。</p>
 <p><img src="image-20210405100732772.png" alt="image-20210405100732772"></p>
-<h3 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h3><p>Mybatis二级缓存的作用域是同一个Mapper，二级缓存开启后，同一个namespace下的所有操作语句，都影响着同一个Cache，即二级缓存被多个SqlSession共享，是一个全局的变量。所以二级存储也称之为<code>namespace</code>缓存！二级缓存默认也是开启的，可以修改配置文件mybatis-config.xml设置&lt;setting name=”cacheEnabled”value=”true”/&gt;，默认是true，即所说的默认是开启的。</p>
+<h3 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h3><p>Mybatis二级缓存的作用域是同一个Mapper，二级缓存开启后，同一个namespace下的所有操作语句，都影响着同一个Cache，即二级缓存被多个SqlSession共享，是一个全局的变量。所以二级存储也称之为<code>namespace</code>缓存！二级缓存需要进行配置开启。</p>
 <p>ps：MyBatis默认实现的一二级缓存是使用HashMap存储的。只有当sqlSession关闭之后，该sqlSession的查询结果才会存入二级缓存中。</p>
 <h4 id="二级缓存的使用"><a href="#二级缓存的使用" class="headerlink" title="二级缓存的使用"></a>二级缓存的使用</h4><p>1.修改配置文件mybatis-config.xml加入&lt;setting name=”cacheEnabled”value=”true”/&gt;，由于默认是true，所以不添加也可以。</p>
 <p>2.在mapper.xml中开启二缓存，mapper.xml下的sql执行完成会存储到它的缓存区,如：</p>
