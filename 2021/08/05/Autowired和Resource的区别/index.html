@@ -14,7 +14,7 @@
 
 
 
-<title>说说springboot中的@SpringBootApplication注解 | Go for it! Just do it!</title>
+<title>Autowired和Resouce的区别 | Go for it! Just do it!</title>
 
 
 
@@ -175,7 +175,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">说说springboot中的@SpringBootApplication注解</h1>
+            <h1 class="post-title">Autowired和Resouce的区别</h1>
             
                 <div class="post-meta">
                     
@@ -184,7 +184,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">July 19, 2021&nbsp;&nbsp;16:54:08</a>
+                        Date: <a href="#">August 5, 2021&nbsp;&nbsp;10:22:41</a>
                         </span>
                     
                     
@@ -200,21 +200,28 @@
         </header>
 
         <div class="post-content">
-            <blockquote>
-<p>spring boot 它的设计目的就是为例简化开发，开启了各种自动装配，你不想写各种配置文件，引入相关的依赖就能迅速搭建起一个web工程。它采用的是建立生产就绪spring应用程序观点，约定优先于配置的惯例。</p>
-</blockquote>
-<p><img src="image-20210719171230987.png"></p>
-<p>我们会发现所有的SpringBoot项目的启动类上都会有一个@SpringBootApplication注解，在这个注解中，有三个最重要的注解：</p>
-<h3 id="1-SpringBootConfiguration"><a href="#1-SpringBootConfiguration" class="headerlink" title="1. @SpringBootConfiguration"></a>1. @SpringBootConfiguration</h3><p>​        @SpringBootConfiguration继承自@Configuration，二者功能也一致，标注当前类是配置类，<br>并会将当前类内声明的一个或多个以@Bean注解标记的方法的实例纳入到spring容器中，并且实例名就是方法名。</p>
-<h3 id="2-EnableAutoConfiguration"><a href="#2-EnableAutoConfiguration" class="headerlink" title="2. @EnableAutoConfiguration"></a>2. @EnableAutoConfiguration</h3><p>​        从字面上看是自动配置的意思，为什么SpringBoot不需要像SSM,SSH那样书写繁多的配置文件就能达到目的呢？答案就在这里。</p>
-<p><img src="image-20210719222018146.png"></p>
-<p>​        通过查看源码我们可以发现，该注解上主要有两个注解在起作用：</p>
-<p>@AutoConfigurationPackage注解的作用是将 添加该注解的类所在的package 作为 自动配置package 进行管理，也就是说当SpringBoot应用启动时默认会将启动类所在的package作为自动配置的package。</p>
-<p>@Import注解的作用是注册bean对象，起着和@Component和@Configuration+@Bean一样的作用，AutoConfigurationImportSelector的作用是扫描META-INF目录下面的spring.factories文件，返回里面配置类的权限类名数组，配合@Import注解将这些类注册到spring容器里面。</p>
-<h3 id="3-ComponentScan"><a href="#3-ComponentScan" class="headerlink" title="3. @ComponentScan"></a>3. @ComponentScan</h3><p>​        这个注解起到了包扫描的作用，默认扫描当前类所在的包以及所在的子包。</p>
-<p><img src="image-20210719211256506.png" alt="image-20210719211256506"></p>
-<p>​        我们通过查看源码可以发现，@ComponentScan里面有个@excludeFilters注解，里面去除了两个过滤器：AutoConfigurationExcludeFilter的作用是声明不用去扫描自动配置的类，因为在@EnableAutoConfiguration注解中已经说到，这个注解就是去扫描所有的配置类，所有这里不用进行二次扫描。</p>
-<p>利用TypeExcludeFilter我们可以自定义不扫描哪些类，继承TypeExcludeFilter重写match方法，在该方法里我们可以自定义规则。</p>
+            <h2 id="Autowired和-Resouce的区别"><a href="#Autowired和-Resouce的区别" class="headerlink" title="@Autowired和@Resouce的区别"></a><strong>@Autowired和@Resouce的区别</strong></h2><p>​        @Autowired功能虽说非常强大，但是也有些不足之处。比如：比如它跟spring强耦合了，如果换成了JFinal等其他框架，功能就会失效。而@Resource是JSR-250提供的，它是Java标准，绝大部分框架都支持。</p>
+<p>除此之外，有些场景使用@Autowired无法满足的要求，改成@Resource却能解决问题。接下来，我们重点看看@Autowired和@Resource的区别。</p>
+<ul>
+<li>@Autowired默认按byType自动装配，而@Resource默认byName自动装配。</li>
+<li>@Autowired只包含一个参数：required，表示是否开启自动准入，默认是true。而@Resource包含七个参数，其中最重要的两个参数是：name 和 type。</li>
+<li>@Autowired如果要使用byName，需要使用@Qualifier一起配合。而@Resource如果指定了name，则用byName自动装配，如果指定了type，则用byType自动装配。</li>
+<li>@Autowired能够用在：构造器、方法、参数、成员变量和注解上，而@Resource能用在：类、成员变量和方法上。</li>
+<li>@Autowired是spring定义的注解，而@Resource是JSR-250定义的注解。</li>
+</ul>
+<p>此外，它们的装配顺序不同。</p>
+<h3 id="Autowired的装配顺序如下："><a href="#Autowired的装配顺序如下：" class="headerlink" title="@Autowired的装配顺序如下："></a><strong>@Autowired的装配顺序如下：</strong></h3><p>​    <img src="1.jpg" alt="1"></p>
+<h3 id="Resource的装配顺序如下："><a href="#Resource的装配顺序如下：" class="headerlink" title="@Resource的装配顺序如下："></a><strong>@Resource的装配顺序如下：</strong></h3><ol>
+<li><p>如果同时指定了name和type：</p>
+<p><img src="2-1628131236758.jpg" alt="2"></p>
+<p>2.如果指定了name：</p>
+<p>​                   <img src="3.jpg" alt="3"></p>
+<p>3.如果指定了type</p>
+<p>​                            <img src="7.jpg" alt="7"></p>
+<p>4.如果既没指定name也没指定type</p>
+<p>​                        <img src="5.jpg" alt="5"></p>
+</li>
+</ol>
 
         </div>
 
@@ -246,10 +253,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/zmq-git.github.io/2021/08/05/Autowired%E5%92%8CResource%E7%9A%84%E5%8C%BA%E5%88%AB/">Autowired和Resouce的区别</a>
             
-            
-            <a class="next" rel="next" href="/zmq-git.github.io/2021/04/16/SpringBoot%E4%B8%AD%E7%9A%84%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F%E8%B5%8B%E5%80%BC/">SpringBoot中的静态变量赋值</a>
+            <a class="next" rel="next" href="/zmq-git.github.io/2021/07/19/%E5%85%B3%E4%BA%8Espringboot%E4%B8%AD%E7%9A%84-SpringBootApplicationn%E6%B3%A8%E8%A7%A3/">说说springboot中的@SpringBootApplication注解</a>
             
         </section>
 
