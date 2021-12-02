@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>MyBatis之大批量数据处理 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/zmq-git.github.io/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/zmq-git.github.io/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/zmq-git.github.io/js/script.js"></script>
+    
+    <script src="/zmq-git.github.io/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/zmq-git.github.io/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/zmq-git.github.io/archives">Posts</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/category/">Categories</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/zmq-git.github.io/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/zmq-git.github.io/archives">Posts</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/category/">Categories</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/zmq-git.github.io/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">MyBatis之大批量数据处理</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">November 22, 2021&nbsp;&nbsp;17:29:37</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/zmq-git.github.io/categories/mybatis/">mybatis</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>在遇到批量插入数据的场景时，有几种方法可以使用，第一种方法是直接使用for循环遍历插入，第二种方法是使用MyBatis自带的foreach标签拼接sql，第三种是使用MyBatis中的批处理功能，那么在需要处理大量数据时，到底选择哪种方法更好呢？第一种方法显然不行，反复获取连接，释放连接，网络IO等等都需要消耗大量时间，下面我来验证下第二种和第三种处理十万条数据时哪个效率更快。</p>
+</blockquote>
+<h3 id="前期准备"><a href="#前期准备" class="headerlink" title="前期准备"></a>前期准备</h3><p>创建一个测试表</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> `<span class="keyword">user</span>` (</span><br><span class="line">  `id` <span class="type">int</span>(<span class="number">11</span>) unsigned <span class="keyword">NOT</span> <span class="keyword">NULL</span> AUTO_INCREMENT,</span><br><span class="line">  `<span class="keyword">pattern</span>` <span class="type">varchar</span>(<span class="number">255</span>) <span class="keyword">DEFAULT</span> <span class="keyword">NULL</span>,</span><br><span class="line">  <span class="keyword">PRIMARY</span> KEY (`id`)</span><br><span class="line">) ENGINE<span class="operator">=</span>InnoDB <span class="keyword">DEFAULT</span> CHARSET<span class="operator">=</span>utf8mb4;</span><br></pre></td></tr></table></figure>
+
+<p>然后新建一个SpringBoot工程，数据库配置信息如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">spring.datasource.url&#x3D;jdbc:mysql:&#x2F;&#x2F;localhost:3306&#x2F;test?useUnicode&#x3D;true&amp;characterEncoding&#x3D;utf8&amp;useSSL&#x3D;false&amp;serverTimezone&#x3D;UTC&amp;rewriteBatchedStatements&#x3D;true</span><br><span class="line">spring.datasource.username&#x3D;root</span><br><span class="line">spring.datasource.password&#x3D;zhangmq</span><br><span class="line">spring.datasource.driverClassName&#x3D;com.mysql.cj.jdbc.Driver</span><br></pre></td></tr></table></figure>
+
+<p>这个数据库连接 URL 地址中多了一个参数 <strong>rewriteBatchedStatements</strong>，这是核心。</p>
+<p>MySQL JDBC 驱动在默认情况下会无视 <code>executeBatch()</code> 语句，把我们期望批量执行的一组 <code>sql</code> 语句拆散，一条一条地发给 <code>MySQL</code> 数据库，批量插入实际上是单条插入，直接造成较低的性能。将 <code>rewriteBatchedStatements</code> 参数置为 <code>true</code>, 数据库驱动才会帮我们批量执行 <code>SQL</code>。</p>
+<p>创建mapper,这里因为配置了@MapperScan所以不需要再单独添加@Mapper注解了</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">MenuMapper</span> </span>&#123;</span><br><span class="line">    <span class="comment">//批处理</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">batchInsert</span><span class="params">(Menu menu)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//foreach</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">foreachInsert</span><span class="params">(<span class="meta">@Param(&quot;menus&quot;)</span> List&lt;Menu&gt; menus)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>创建对应xml：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot; ?&gt;</span><br><span class="line">&lt;!DOCTYPE mapper PUBLIC &quot;-&#x2F;&#x2F;mybatis.org&#x2F;&#x2F;DTD Mapper 3.0&#x2F;&#x2F;EN&quot;</span><br><span class="line">        &quot;http:&#x2F;&#x2F;mybatis.org&#x2F;dtd&#x2F;mybatis-3-mapper.dtd&quot; &gt;</span><br><span class="line">&lt;mapper namespace&#x3D;&quot;com.example.mapper.MenuMapper&quot;&gt;</span><br><span class="line">    &lt;insert id&#x3D;&quot;batchInsert&quot; parameterType&#x3D;&quot;com.example.entity.Menu&quot;&gt;</span><br><span class="line">        insert into menu(pattern) values(#&#123;pattern&#125;)</span><br><span class="line">    &lt;&#x2F;insert&gt;</span><br><span class="line"></span><br><span class="line">    &lt;insert id&#x3D;&quot;foreachInsert&quot;&gt;</span><br><span class="line">        insert into menu(pattern) values</span><br><span class="line">        &lt;foreach collection&#x3D;&quot;menus&quot; item&#x3D;&quot;item&quot; separator&#x3D;&quot;,&quot;&gt;</span><br><span class="line">            (#&#123;item.pattern&#125;)</span><br><span class="line">        &lt;&#x2F;foreach&gt;</span><br><span class="line">    &lt;&#x2F;insert&gt;</span><br><span class="line">&lt;&#x2F;mapper&gt;</span><br></pre></td></tr></table></figure>
+
+<p>service如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">@Service</span><br><span class="line">public class MenuService &#123;</span><br><span class="line">    @Autowired</span><br><span class="line">    MenuMapper menuMapper;</span><br><span class="line"></span><br><span class="line">    @Autowired</span><br><span class="line">    SqlSessionFactory sqlSessionFactory;</span><br><span class="line">    </span><br><span class="line">	&#x2F;&#x2F;foreach插入</span><br><span class="line">    public void insert()&#123;</span><br><span class="line">        List&lt;Menu&gt; list &#x3D; initData(100000);</span><br><span class="line">        long start &#x3D; System.currentTimeMillis();</span><br><span class="line">        menuMapper.foreachInsert(list);</span><br><span class="line">        long end &#x3D; System.currentTimeMillis();</span><br><span class="line">        System.out.println(&quot;合并成一条 SQL 插入耗费时间&quot;+(end-start));</span><br><span class="line">    &#125;</span><br><span class="line">	&#x2F;&#x2F;批量插入</span><br><span class="line">    public void  batchInsert()&#123;</span><br><span class="line">        List&lt;Menu&gt; list &#x3D; initData(100000);</span><br><span class="line">        SqlSession session &#x3D; sqlSessionFactory.openSession(ExecutorType.BATCH);</span><br><span class="line">        MenuMapper mapper &#x3D; session.getMapper(MenuMapper.class);</span><br><span class="line">        long start &#x3D; System.currentTimeMillis();</span><br><span class="line">        list.forEach(item -&gt;&#123;</span><br><span class="line">            mapper.batchInsert(item);</span><br><span class="line">        &#125;);</span><br><span class="line">        session.commit();</span><br><span class="line">        long end &#x3D; System.currentTimeMillis();</span><br><span class="line">        System.out.println(&quot;一条条插入 SQL 耗费时间&quot;+(end-start));</span><br><span class="line">    &#125;</span><br><span class="line">	&#x2F;&#x2F;提供数据</span><br><span class="line">    public List initData(int num)&#123;</span><br><span class="line">        List&lt;Menu&gt; list &#x3D; new ArrayList();</span><br><span class="line">        for(int i &#x3D; 0; i &lt; num; i++)&#123;</span><br><span class="line">            Menu menu &#x3D; new Menu();</span><br><span class="line">            menu.setPattern(&quot;test&quot;);</span><br><span class="line">            list.add(menu);</span><br><span class="line">        &#125;</span><br><span class="line">        return list;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h3><h4 id="使用foreach"><a href="#使用foreach" class="headerlink" title="使用foreach"></a>使用foreach</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BatchInsertApplicationTests</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    MenuService menuService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">contextLoads</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        menuService.insert();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一次：</p>
+<p><img src="image-20211202092034796.png" alt="image-20211202092034796"></p>
+<p>第二次：</p>
+<p><img src="image-20211202093246800.png" alt="image-20211202093246800"></p>
+<p>第三次：</p>
+<p><img src="image-20211202093204238.png" alt="image-20211202093204238"></p>
+<p>使用foreach插入十万条数据，执行三次的平均耗时为6293ms。</p>
+<h4 id="使用batch批处理"><a href="#使用batch批处理" class="headerlink" title="使用batch批处理"></a>使用batch批处理</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@SpringBootTest</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BatchInsertApplicationTests</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    MenuService menuService;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">contextLoads</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        menuService.batchInsert();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>第一次：</p>
+<p><img src="image-20211202092423970.png" alt="image-20211202092423970"></p>
+<p>第二次：</p>
+<p><img src="image-20211202093606405.png" alt="image-20211202093606405"></p>
+<p>第三次：</p>
+<p><img src="image-20211202093706705.png" alt="image-20211202093706705"></p>
+<p>使用批处理插入十万条数据，执行三次的平均耗时为5135ms</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><table>
+<thead>
+<tr>
+<th>插入方式</th>
+<th>数据量</th>
+<th>执行三次的平均耗时</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>foreach拼接sql</td>
+<td>10w</td>
+<td>6293ms</td>
+</tr>
+<tr>
+<td>批处理</td>
+<td>10w</td>
+<td>5135ms</td>
+</tr>
+</tbody></table>
+<ol>
+<li>循环插入单条数据虽然效率极低，但是代码量极少，数据量较小时可以使用，但是数据量较大禁止使用，效率太低了；</li>
+<li><code>foreach</code> 拼接<code>sql</code>的方式，使用时有大段的xml和sql语句要写，很容易出错，虽然效率尚可，但是真正应对大量数据的时候，拼接后的sql有可能会触发数据库最大执行sql的限制，所以不推荐使用；</li>
+<li>批处理执行是有大数据量插入时推荐的做法，使用起来也比较方便。</li>
+</ol>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/zmq-git.github.io/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"># 学习笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/zmq-git.github.io/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/zmq-git.github.io/2021/09/03/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AD%A6%E4%B9%A0/">Java线程池学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2021 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
