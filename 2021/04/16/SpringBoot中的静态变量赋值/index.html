@@ -201,7 +201,7 @@
 
         <div class="post-content">
             <blockquote>
-<p>最近在SpringBoot项目中需要利用到FTP实现上传下载，于是我统一封装了一个FTP工具类，既然是工具类，那肯定是写成静态方法，而不是通过实例调用，但是通过**@Value注解获取配置文件属性<strong>（问题一）以及</strong>在静态方法里使用IOC注入的bean对象**（问题二）时，遇到了问题。</p>
+<p>最近在SpringBoot项目中需要利用到FTP实现上传下载，于是我统一封装了一个FTP工具类，既然是工具类，那肯定是写成静态方法，而不是通过实例调用，但是通过@Value注解获取配置文件属性（问题一）以及在静态方法里使用@Resource注入的bean对象（问题二）时，遇到了问题。</p>
 </blockquote>
 <h3 id="问题一"><a href="#问题一" class="headerlink" title="问题一"></a>问题一</h3><h4 id="描述"><a href="#描述" class="headerlink" title="描述"></a>描述</h4><p>我将FTP配置放在了配置文件application.yml中，在FtpUtils工具类中，使用@Value获取配置</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Component</span><br><span class="line">public class FtpUtil &#123;</span><br><span class="line">  	@Value(&quot;$&#123;ftp.username&#125;&quot;)</span><br><span class="line">    private static String username; &#x2F;&#x2F; FTP 登录用户名</span><br><span class="line">    @Value(&quot;$&#123;ftp.username&#125;&quot;)</span><br><span class="line">    private static String password; &#x2F;&#x2F; FTP 登录密码</span><br><span class="line">    @Value(&quot;$&#123;ftp.username&#125;&quot;)</span><br><span class="line">    private static  String ip; &#x2F;&#x2F; FTP 服务器地址IP地址</span><br><span class="line">    @Value(&quot;$&#123;ftp.username&#125;&quot;)</span><br><span class="line">    private static int port; &#x2F;&#x2F; FTP 端口</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
@@ -264,7 +264,7 @@
         <footer id="footer" class="footer">
 
     <div class="copyright">
-        <span>© 2021 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+        <span>© 2022 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
 		<span>赣ICP备2020010454号</span> 
     </div>
 </footer>
