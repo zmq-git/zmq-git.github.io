@@ -269,7 +269,60 @@
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker image rm -f bf756fb1ae65</span><br></pre></td></tr></table></figure>
 
 <p>该指令会将镜像和通过该镜像执行的容器全部删除，谨慎使用。</p>
+<p><strong>上传镜像</strong></p>
+<p><strong>语法</strong>：**docker push **[OPTIONS] <strong>NAME</strong>[:TAG]</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker push myapache:v1 # 上传本地镜像myapache:v1到镜像仓库中。 </span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OPTIONS：参数选项[**–disable-content-trust **:忽略镜像的校验,默认开启]</p>
+</blockquote>
+<p><strong>构建镜像</strong></p>
+<p>使用 Dockerfile 创建镜像。</p>
+<p><strong>语法</strong>：<strong>docker build</strong> [OPTIONS] <strong>PATH</strong> | **URL **</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">docker build -t runoob/ubuntu:v1 # 用当前目录的 Dockerfile 创建镜像，标签为runoob/ubuntu:v1</span><br><span class="line">docker build github.com/creack/docker-firefox # 使用URL的 Dockerfile 创建镜像</span><br><span class="line">docker build -f /path/to/a/Dockerfile # 通过 -f Dockerfile 文件的位置</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OPTIONS:[-t: 镜像的名字及标签,通常 name:tag 或者 name 格式；可在一次构建中为一个镜像设置多个标签，**-f :**指定要使用的Dockerfile路径]</p>
+</blockquote>
+<p><strong>打包镜像</strong></p>
+<p><strong>语法</strong>：docker save [OPTIONS] IMAGE [IMAGE…]</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker save -o my_ubuntu_v3.tar ubuntu:v3 #将镜像ubuntu:v3 生成my_ubuntu_v3.tar</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OPTIONS :[**-o :**输出到的文件]</p>
+</blockquote>
+<p><strong>导入镜像</strong></p>
+<p><strong>语法</strong>：docker load [OPTIONS]</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker load &lt; busybox.tar.gz</span><br><span class="line">docker load -i fedora.tar</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OPTIONS :[-i : 指定导入的文件，代替 STDIN;-q : 精简输出信息]</p>
+</blockquote>
 <h2 id="Docker-容器指令"><a href="#Docker-容器指令" class="headerlink" title="Docker 容器指令"></a>Docker 容器指令</h2><p>掌握了镜像的相关指令之后，我们需要了解一下容器的指令，容器是基于镜像的。</p>
+<p><strong>容器的运行</strong></p>
+<p><strong>语法</strong>：docker run [OPTIONS] IMAGE [COMMAND] </p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">docker run -d nginx # 后台模式启动一个容器</span><br><span class="line">docker run -p 80:80 -v /data:/data -d nginx #将容器的 80 端口映射到主机的 80 端口,主机的目录 /data 映射到容器的 /data</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>OPTIONS说明：</p>
+<p><strong>-d:</strong> 后台运行容器，并返回容器ID；</p>
+<p><strong>-i:</strong> 以交互模式运行容器，通常与 -t 同时使用；</p>
+<p><strong>-P:</strong> 随机端口映射，容器内部端口<strong>随机</strong>映射到主机的端口</p>
+<p><strong>-p:</strong> 指定端口映射，格式为：<strong>主机(宿主)端口:容器端口</strong></p>
+<p><strong>-t:</strong> 为容器重新分配一个伪输入终端，通常与 -i 同时使用；</p>
+<p><strong>–name=”nginx-lb”:</strong> 为容器指定一个名称；</p>
+<p><strong>–dns 8.8.8.8 :</strong> 指定容器使用的DNS服务器，默认和宿主一致；</p>
+<p><strong>–dns-search example.com :</strong> 指定容器DNS搜索域名，默认和宿主一致；</p>
+<p><strong>-h “mars” :</strong> 指定容器的hostname；</p>
+<p><strong>-e username=”ritchie” :</strong> 设置环境变量；</p>
+<p><strong>–env-file=[] :</strong> 从指定文件读入环境变量；</p>
+<p><strong>–cpuset=”0-2” or –cpuset=”0,1,2”:</strong> 绑定容器到指定CPU运行；</p>
+<p>**-m :**设置容器使用内存最大值；</p>
+<p><strong>–net=”bridge”:</strong> 指定容器的网络连接类型，支持 bridge/host/none/container: 四种类型；</p>
+<p><strong>–link=[]:</strong> 添加链接到另一个容器；</p>
+<p><strong>–expose=[]:</strong> 开放一个端口或一组端口；</p>
+<p><strong>–volume , -v:</strong> 绑定一个卷</p>
+</blockquote>
 <p>若需要通过镜像运行一个容器，则使用：</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run tomcat:8.0-jre8</span><br></pre></td></tr></table></figure>
 
@@ -395,7 +448,7 @@
         <footer id="footer" class="footer">
 
     <div class="copyright">
-        <span>© 2022 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+        <span>© 2023 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
 		<span>赣ICP备2020010454号</span> 
     </div>
 </footer>
