@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>Docker网络篇 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Docker网络篇</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">April 11, 2023&nbsp;&nbsp;19:10:16</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="Docker-网络原理"><a href="#Docker-网络原理" class="headerlink" title="Docker 网络原理"></a>Docker 网络原理</h3><p>容器是相对独立的环境，相当于一个小型的 Linux 系统，外界无法直接访问，那他是怎么做的呢，这里我们先了解下 Linux veth pair。</p>
+<h3 id="1-Linux-veth-pair"><a href="#1-Linux-veth-pair" class="headerlink" title="1. Linux veth pair"></a>1. Linux veth pair</h3><p>veth pair 是成对出现的一种虚拟网络设备接口，一端连着网络协议栈，一端彼此相连。如下图所示：</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230411191607263.png" alt="image-20230411191607263"></p>
+<blockquote>
+<p>veth pair将两个网络veth0和veth1连通。</p>
+</blockquote>
+<h3 id="2-理解Docker0"><a href="#2-理解Docker0" class="headerlink" title="2. 理解Docker0"></a>2. 理解Docker0</h3><p>我们先查看本地ip</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230411192423708.png" alt="image-20230411192423708"></p>
+<p>这里我们分析可得，有三个网络：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">lo      127.0.0.1      # 本机回环地址eth0    </span><br><span class="line">192.168.16.5  # 云服务器的私有IP（如果你是虚拟机就是虚拟机的ip）</span><br><span class="line">docker0 172.17.0.1       # docker网桥</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>lo和eth0在我们的虚拟机启动的时候就会创建，但是docker0在我们安装了docker的时候就会创建。docker0用来和虚拟机之间通信。</p>
+</blockquote>
+<p>问题：Docker 是如何处理容器网络访问的？</p>
+<p>我们先启动一个tomcat  容器来说明。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker ps -a</span><br><span class="line">CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES</span><br><span class="line">[root@instance-or32q101 ~]# docker images</span><br><span class="line">REPOSITORY   TAG       IMAGE ID       CREATED         SIZE</span><br><span class="line">vhr          latest    f0f9f2026059   7 weeks ago     692MB</span><br><span class="line">redis        5.0       99ee9af2b6b1   5 months ago    110MB</span><br><span class="line">tomcat       latest    fb5657adc892   16 months ago   680MB</span><br><span class="line">mysql        8.0.15    7bb2586065cd   4 years ago     477MB</span><br><span class="line">java         8         d23bdf5b1b1b   6 years ago     643MB</span><br><span class="line">[root@instance-or32q101 ~]# docker run -d -p 8081:8080 --name tomcat01 tomcat</span><br><span class="line">975b14c32bc4360b5e86c167a52dc4e7403ba0e91a8d2564f7439fe3661888cb</span><br></pre></td></tr></table></figure>
+
+<p>这里启动了tomcat，我们再来查看网络</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230421141551459.png" alt="image-20230421141551459"></p>
+<blockquote>
+<p>发现：当启动了一个Redis容器之后，多了一组网卡6: veth77880b4@if5，而且还是成对的。同样我们再来启动一个tomcat02会又多出一对网卡。</p>
+</blockquote>
+<p>进入了 tomcat01 容器内可以看到 tomcat01 对应的 ip 地址为：172.17.0.2</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230421141842488.png" alt="image-20230421141842488"></p>
+<p>在宿主机上也可ping通。</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230411195002973.png" alt="image-20230411195002973"></p>
+<blockquote>
+<p>说明：Redis对应的ip为172.17.0.3，也可以ping通。</p>
+</blockquote>
+<p>结论：我们每启动一个容器，就会多出一对网卡，同时他们被连接到docker0上，而docker0又和虚拟机之间连通。</p>
+<p>也可以通过inspect查看。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker network ls</span><br><span class="line">NETWORK ID     NAME      DRIVER    SCOPE</span><br><span class="line">86c046e34bef   bridge    bridge    local # 这个就是docker0</span><br><span class="line">77cd570b3ade   host      host      local</span><br><span class="line">c21b8ee630e6   mynet     bridge    local</span><br><span class="line">8b232ab59cec   none      null      local</span><br><span class="line">[root@instance-or32q101 ~]# docker inspect 86c046e34bef</span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Name&quot;: &quot;bridge&quot;,</span><br><span class="line">        &quot;Id&quot;: &quot;86c046e34bef73a3032f4690147934aff2ae314948676b0c5310640e13c640ff&quot;,</span><br><span class="line">        &quot;Created&quot;: &quot;2023-04-21T01:31:36.929341733+08:00&quot;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;bridge&quot;,</span><br><span class="line">        &quot;EnableIPv6&quot;: false,</span><br><span class="line">        &quot;IPAM&quot;: &#123;</span><br><span class="line">            &quot;Driver&quot;: &quot;default&quot;,</span><br><span class="line">            &quot;Options&quot;: null,</span><br><span class="line">            &quot;Config&quot;: [</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;Subnet&quot;: &quot;172.17.0.0&#x2F;16&quot;,</span><br><span class="line">                    &quot;Gateway&quot;: &quot;172.17.0.1&quot;</span><br><span class="line">                &#125;</span><br><span class="line">            ]</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Internal&quot;: false,</span><br><span class="line">        &quot;Attachable&quot;: false,</span><br><span class="line">        &quot;Ingress&quot;: false,</span><br><span class="line">        &quot;ConfigFrom&quot;: &#123;</span><br><span class="line">            &quot;Network&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;ConfigOnly&quot;: false,</span><br><span class="line">        &quot;Containers&quot;: &#123;</span><br><span class="line">            &quot;975b14c32bc4360b5e86c167a52dc4e7403ba0e91a8d2564f7439fe3661888cb&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat01&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;3407a81431308541dcd98e2ce99622938e2d8f8834b902a47df0f07c40048593&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:ac:11:00:02&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;172.17.0.2&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Options&quot;: &#123;</span><br><span class="line">            &quot;com.docker.network.bridge.default_bridge&quot;: &quot;true&quot;,</span><br><span class="line">            &quot;com.docker.network.bridge.enable_icc&quot;: &quot;true&quot;,</span><br><span class="line">            &quot;com.docker.network.bridge.enable_ip_masquerade&quot;: &quot;true&quot;,</span><br><span class="line">            &quot;com.docker.network.bridge.host_binding_ipv4&quot;: &quot;0.0.0.0&quot;,</span><br><span class="line">            &quot;com.docker.network.bridge.name&quot;: &quot;docker0&quot;,</span><br><span class="line">            &quot;com.docker.network.driver.mtu&quot;: &quot;1500&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我们可以抽象为这样一个网络模型。</p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230411195341749.png" alt="image-20230411195341749"></p>
+<blockquote>
+<p>在这里，我们可以看到Docker0相当于一个路由器的作用，任何一个容器启动默认都是docker0网络。</p>
+<p>docker默认会给容器分配一个可用ip，并把它同docke0相连。使用到的就是veth pair技术。</p>
+</blockquote>
+<h3 id="3-容器互联–Link"><a href="#3-容器互联–Link" class="headerlink" title="3. 容器互联–Link"></a>3. 容器互联–Link</h3><p>前面我们启动的两个 tomcat 对应的 hosts 如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker exec -it tomcat01 cat &#x2F;etc&#x2F;hosts</span><br><span class="line">127.0.0.1	localhost</span><br><span class="line">::1	localhost ip6-localhost ip6-loopback</span><br><span class="line">fe00::0	ip6-localnet</span><br><span class="line">ff00::0	ip6-mcastprefix</span><br><span class="line">ff02::1	ip6-allnodes</span><br><span class="line">ff02::2	ip6-allrouters</span><br><span class="line">172.17.0.2	975b14c32bc4</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker exec -it tomcat02 cat &#x2F;etc&#x2F;hosts</span><br><span class="line">127.0.0.1	localhost</span><br><span class="line">::1	localhost ip6-localhost ip6-loopback</span><br><span class="line">fe00::0	ip6-localnet</span><br><span class="line">ff00::0	ip6-mcastprefix</span><br><span class="line">ff02::1	ip6-allnodes</span><br><span class="line">ff02::2	ip6-allrouters</span><br><span class="line">172.17.0.3	f58d4aab065d</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>发现：他们的 hosts 中只有各自的ip地址。</p>
+</blockquote>
+<p>但是在实际的工作中，容器使用的是虚拟ip，每次启动ip都会变化，思考一个场景，我们编写一个微服务，数据库连接地址原来是使用ip的，如果ip变化就不行了，那我们能不能使用服务名访问呢？</p>
+<p>我们在启动一个tomcat03，使用—link绑定到tomcat02上。然后看它的hosts是什么样的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker run -d -p 8083:8080 --name tomcat03 --link tomcat02 tomcat</span><br><span class="line">75aa934a2757a7e028b975f95da8d7ea040feba04e75bf34273c18ab0924554e</span><br><span class="line">[root@instance-or32q101 ~]# docker exec -it tomcat03 cat &#x2F;etc&#x2F;hosts</span><br><span class="line">127.0.0.1	localhost</span><br><span class="line">::1	localhost ip6-localhost ip6-loopback</span><br><span class="line">fe00::0	ip6-localnet</span><br><span class="line">ff00::0	ip6-mcastprefix</span><br><span class="line">ff02::1	ip6-allnodes</span><br><span class="line">ff02::2	ip6-allrouters</span><br><span class="line">172.17.0.3	tomcat02 f58d4aab065d</span><br><span class="line">172.17.0.4	75aa934a2757</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>发现：使用了–link，不但有了自己的ip，而且还有了tomcat02的服务名。但是tomcat02中并没有tomcat03的，因为–link是单向的。</p>
+</blockquote>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/fEsWkVrSk57LEFac78iab97vUUjticT7O4kECMX0ibiarI92dD2ibGmjr42rWSJcpsuHZuzoGzEJuPTOkJyryjk4MCA/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p>这样就实现了容器和容器之间的连通。不需要通过ip地址连通，而是通过服务名就可以。</p>
+<p>但是使用—link的方法过时了，我们一般使用自定义网络。</p>
+<h3 id="4-自定义网络（推荐）"><a href="#4-自定义网络（推荐）" class="headerlink" title="4.自定义网络（推荐）"></a>4.自定义网络（推荐）</h3><p>docker0的特点：</p>
+<ul>
+<li>它是默认的</li>
+<li>域名访问不通</li>
+<li>–link 域名通了，但是删了又不行</li>
+</ul>
+<p>docker为我们提供了三种网络模式</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker network ls</span><br><span class="line">NETWORK ID     NAME      DRIVER    SCOPE</span><br><span class="line">a8c09e107847   bridge    bridge    local</span><br><span class="line">77cd570b3ade   host      host      local</span><br><span class="line">8b232ab59cec   none      null      local</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这其中默认使用的是 bridge，也就是我们的docker0网卡。</p>
+<table>
+<thead>
+<tr>
+<th align="center">网络模式</th>
+<th align="center">配置</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">bridge模式</td>
+<td align="center">–net=bridge</td>
+<td align="center">默认值，在Docker网桥docker0上为容器创建新的网络栈</td>
+</tr>
+<tr>
+<td align="center">none模式</td>
+<td align="center">–net=none</td>
+<td align="center">不配置网络，用户可以稍后进入容器，自行配置</td>
+</tr>
+<tr>
+<td align="center">container模式</td>
+<td align="center">–net=container:name/id</td>
+<td align="center">容器和另一个容器共享Network namespace</td>
+</tr>
+<tr>
+<td align="center">host模式</td>
+<td align="center">–net=host</td>
+<td align="center">容器和宿主机共享Network namespace</td>
+</tr>
+<tr>
+<td align="center">用户自定义</td>
+<td align="center">–net=自定义网络</td>
+<td align="center">用户自己使用network相关命令定义网络，创建容器的时候可以指定为自定义的网络</td>
+</tr>
+</tbody></table>
+<p>在我们启动容器的时候，实际上是如下命令</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker run -d -P --name tomcat01 --net bridge tomcat</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这个—net是默认的，所以被省略了。</p>
+</blockquote>
+<p>下面我们自定义一个网络 mynet。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker network create --driver bridge --subnet 192.168.0.0&#x2F;16 --gateway 192.168.0.1 mynet</span><br><span class="line">963b594c07add27410d690fd388a4ed2a0fb196c0bcae08f0a30415e2d8ce131</span><br><span class="line">[root@instance-or32q101 ~]# docker network ls</span><br><span class="line">NETWORK ID     NAME      DRIVER    SCOPE</span><br><span class="line">a8c09e107847   bridge    bridge    local</span><br><span class="line">77cd570b3ade   host      host      local</span><br><span class="line">963b594c07ad   mynet     bridge    local	#自定义网络</span><br><span class="line">8b232ab59cec   none      null      local</span><br><span class="line">[root@instance-or32q101 ~]# docker network inspect mynet</span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Name&quot;: &quot;mynet&quot;,</span><br><span class="line">        &quot;Id&quot;: &quot;963b594c07add27410d690fd388a4ed2a0fb196c0bcae08f0a30415e2d8ce131&quot;,</span><br><span class="line">        &quot;Created&quot;: &quot;2023-04-25T15:08:11.109587587+08:00&quot;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;bridge&quot;,</span><br><span class="line">        &quot;EnableIPv6&quot;: false,</span><br><span class="line">        &quot;IPAM&quot;: &#123;</span><br><span class="line">            &quot;Driver&quot;: &quot;default&quot;,</span><br><span class="line">            &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">            &quot;Config&quot;: [</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;Subnet&quot;: &quot;192.168.0.0&#x2F;16&quot;,</span><br><span class="line">                    &quot;Gateway&quot;: &quot;192.168.0.1&quot;</span><br><span class="line">                &#125;</span><br><span class="line">            ]</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Internal&quot;: false,</span><br><span class="line">        &quot;Attachable&quot;: false,</span><br><span class="line">        &quot;Ingress&quot;: false,</span><br><span class="line">        &quot;ConfigFrom&quot;: &#123;</span><br><span class="line">            &quot;Network&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;ConfigOnly&quot;: false,</span><br><span class="line">        &quot;Containers&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>下面我们使用自定义的网络启动 tomcat</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker run -d  -p 8081:8080 --name tomcat-net-01 --net mynet tomcat</span><br><span class="line">a4de0cb908e147bfbc7d55660387e93bc5bda7e8cd59e54bcfb075f22b04581b</span><br><span class="line">[root@instance-or32q101 ~]# docker run -d  -p 8085:8080 --name tomcat-net-02 --net mynet tomcat</span><br><span class="line">19bce82bdc4bf61532a9c02b304924fe3687f37f7ceb75c8c72bbd94ab70c2df</span><br><span class="line">[root@instance-or32q101 ~]# docker ps -a</span><br><span class="line">CONTAINER ID   IMAGE     COMMAND             CREATED          STATUS              PORTS                                       NAMES</span><br><span class="line">19bce82bdc4b   tomcat    &quot;catalina.sh run&quot;   17 seconds ago   Up 14 seconds       0.0.0.0:8085-&gt;8080&#x2F;tcp, :::8085-&gt;8080&#x2F;tcp   tomcat-net-02</span><br><span class="line">a4de0cb908e1   tomcat    &quot;catalina.sh run&quot;   2 minutes ago    Up About a minute   0.0.0.0:8081-&gt;8080&#x2F;tcp, :::8081-&gt;8080&#x2F;tcp   tomcat-net-01</span><br></pre></td></tr></table></figure>
+
+<p>查看网络</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker inspect mynet</span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Name&quot;: &quot;mynet&quot;,</span><br><span class="line">        &quot;Id&quot;: &quot;963b594c07add27410d690fd388a4ed2a0fb196c0bcae08f0a30415e2d8ce131&quot;,</span><br><span class="line">        &quot;Created&quot;: &quot;2023-04-25T15:08:11.109587587+08:00&quot;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;bridge&quot;,</span><br><span class="line">        &quot;EnableIPv6&quot;: false,</span><br><span class="line">        &quot;IPAM&quot;: &#123;</span><br><span class="line">            &quot;Driver&quot;: &quot;default&quot;,</span><br><span class="line">            &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">            &quot;Config&quot;: [</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;Subnet&quot;: &quot;192.168.0.0&#x2F;16&quot;,</span><br><span class="line">                    &quot;Gateway&quot;: &quot;192.168.0.1&quot;</span><br><span class="line">                &#125;</span><br><span class="line">            ]</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Internal&quot;: false,</span><br><span class="line">        &quot;Attachable&quot;: false,</span><br><span class="line">        &quot;Ingress&quot;: false,</span><br><span class="line">        &quot;ConfigFrom&quot;: &#123;</span><br><span class="line">            &quot;Network&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;ConfigOnly&quot;: false,</span><br><span class="line">        &quot;Containers&quot;: &#123;</span><br><span class="line">            &quot;19bce82bdc4bf61532a9c02b304924fe3687f37f7ceb75c8c72bbd94ab70c2df&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat-net-02&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;18d57a71e0348d10c53d057aa7cdaa94a220a3d958650a7024e5186828f2bd05&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:c0:a8:00:03&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;192.168.0.3&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;a4de0cb908e147bfbc7d55660387e93bc5bda7e8cd59e54bcfb075f22b04581b&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat-net-01&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;fcd3c0859ea65a8b4a41f627fda9142f58bb453fa6a728ca2295fd2da588135d&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:c0:a8:00:02&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;192.168.0.2&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<p>我们来测试ping容器名和ip试试，都可以ping通</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker exec -it tomcat-net-01 ping 192.168.0.3</span><br><span class="line">PING 192.168.0.3 (192.168.0.3) 56(84) bytes of data.</span><br><span class="line">64 bytes from 192.168.0.3: icmp_seq&#x3D;1 ttl&#x3D;64 time&#x3D;0.093 ms</span><br><span class="line">[root@instance-or32q101 ~]# docker exec -it tomcat-net-01 ping tomcat-net-02</span><br><span class="line">PING tomcat-net-02 (192.168.0.3) 56(84) bytes of data.</span><br><span class="line">64 bytes from tomcat-net-02.mynet (192.168.0.3): icmp_seq&#x3D;1 ttl&#x3D;64 time&#x3D;0.063 ms</span><br><span class="line">64 bytes from tomcat-net-02.mynet (192.168.0.3): icmp_seq&#x3D;2 ttl&#x3D;64 time&#x3D;0.066 ms</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>发现：不用—link也可以直接通过服务名ping通了。</p>
+</blockquote>
+<h3 id="5-网络连通"><a href="#5-网络连通" class="headerlink" title="5.网络连通"></a>5.网络连通</h3><p>docker0和自定义网络肯定不通，我们使用自定义网络的好处就是网络隔离。</p>
+<p>但是在实际的工作中，比如我们部署了mysql使用了一个网段。部署了tomcat使用了另一个网段，两个网段之间肯定是不能相互连通的，但是tomcat和mysql又需要相互连通，我们就要使用网络连通。原理图如下：</p>
+<p><img src="https://mmbiz.qpic.cn/mmbiz_png/fEsWkVrSk57LEFac78iab97vUUjticT7O4z3crNmzezhCLqVcnbExkricpHKXN0Wj7ShmdJQ3kGrdErzAYApXnxmw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p><img src="Docker%E7%BD%91%E7%BB%9C%E7%AF%87/image-20230426103919180.png" alt="image-20230426103919180"></p>
+<p>网络连通就是将一个容器和一个网段之间的连通。</p>
+<p>比如我前面使用的默认docker0的tomcat01，需要连接到mynet网络。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">[root@instance-or32q101 ~]# docker network connect mynet tomcat01</span><br><span class="line">[root@instance-or32q101 ~]# docker network inspect mynet</span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Name&quot;: &quot;mynet&quot;,</span><br><span class="line">        &quot;Id&quot;: &quot;3136d64109c6f285bc69d3ee4be901524292d0e5ddd9e414d49197dfa6c19ba1&quot;,</span><br><span class="line">        &quot;Created&quot;: &quot;2022-02-27T14:15:44.676693958+08:00&quot;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;bridge&quot;,</span><br><span class="line">        &quot;EnableIPv6&quot;: false,</span><br><span class="line">        &quot;IPAM&quot;: &#123;</span><br><span class="line">            &quot;Driver&quot;: &quot;default&quot;,</span><br><span class="line">            &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">            &quot;Config&quot;: [</span><br><span class="line">                &#123;</span><br><span class="line">                    &quot;Subnet&quot;: &quot;192.168.0.0&#x2F;16&quot;,</span><br><span class="line">                    &quot;Gateway&quot;: &quot;192.168.0.1&quot;</span><br><span class="line">                &#125;</span><br><span class="line">]</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Internal&quot;: false,</span><br><span class="line">        &quot;Attachable&quot;: false,</span><br><span class="line">        &quot;Ingress&quot;: false,</span><br><span class="line">        &quot;ConfigFrom&quot;: &#123;</span><br><span class="line">            &quot;Network&quot;: &quot;&quot;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;ConfigOnly&quot;: false,</span><br><span class="line">        &quot;Containers&quot;: &#123;</span><br><span class="line">            &quot;2e709013935463c29caf28771bb49925fee4e02842459b339d7dd1ad5dedf9b7&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat-net-01&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;9f3a46bad37ade7935e283715caa5699e9a7e22175b592f4a4792a37c351d969&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:c0:a8:00:02&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;192.168.0.2&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;5c0c544f2507d9f5f456feceddbd853ebccc07cea8c39c8479693731e480bf55&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat01&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;d05abb2d31af4067c5a45f299ce7b4401b1fa81638a44b6c09f3de7f8f4221fe&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:c0:a8:00:04&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;192.168.0.4&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;,</span><br><span class="line">            &quot;d6066db5fdd0b508514107a896ed20b639eaa47dbd97a025ad0c52250766c8a4&quot;: &#123;</span><br><span class="line">                &quot;Name&quot;: &quot;tomcat-net-02&quot;,</span><br><span class="line">                &quot;EndpointID&quot;: &quot;3a5f6f2a07d900303382b290825c9f52640689c859608c741c7c7d81031e107e&quot;,</span><br><span class="line">                &quot;MacAddress&quot;: &quot;02:42:c0:a8:00:03&quot;,</span><br><span class="line">                &quot;IPv4Address&quot;: &quot;192.168.0.3&#x2F;16&quot;,</span><br><span class="line">                &quot;IPv6Address&quot;: &quot;&quot;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>通过这种方式直接将tomcat01加到了mynet网络中。</p>
+</blockquote>
+<h3 id="6-总结"><a href="#6-总结" class="headerlink" title="6.总结"></a>6.总结</h3><ul>
+<li>veth pair是成对出现的一种虚拟网络设备接口，一端连着网络协议栈，一端彼此相连。</li>
+<li>docker中默认使用docker0网络。</li>
+<li>docker0相当于一个路由器的作用，任何一个容器启动默认都是docker0网络。</li>
+<li>docker0是容器和虚拟机之间通信的桥梁。</li>
+<li>推荐使用自定义网络，更好实现使用服务名的连通方式，避免ip改变的尴尬。</li>
+<li>网络之间不能直接连通，网络连通是将一个容器和一个网络之间的连通，实现跨网络操作。</li>
+</ul>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2023/04/01/Docker%E6%95%B0%E6%8D%AE%E5%8D%B7/">Docker数据卷</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2023 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
