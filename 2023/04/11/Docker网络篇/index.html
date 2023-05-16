@@ -248,7 +248,7 @@
 <blockquote>
 <p>发现：使用了–link，不但有了自己的ip，而且还有了tomcat02的服务名。但是tomcat02中并没有tomcat03的，因为–link是单向的。</p>
 </blockquote>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/fEsWkVrSk57LEFac78iab97vUUjticT7O4kECMX0ibiarI92dD2ibGmjr42rWSJcpsuHZuzoGzEJuPTOkJyryjk4MCA/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p><img src="image-20230516102412557.png" alt="image-20230516102412557"></p>
 <p>这样就实现了容器和容器之间的连通。不需要通过ip地址连通，而是通过服务名就可以。</p>
 <p>但是使用—link的方法过时了，我们一般使用自定义网络。</p>
 <h3 id="4-自定义网络（推荐）"><a href="#4-自定义网络（推荐）" class="headerlink" title="4.自定义网络（推荐）"></a>4.自定义网络（推荐）</h3><p>docker0的特点：</p>
@@ -318,7 +318,7 @@
 </blockquote>
 <h3 id="5-网络连通"><a href="#5-网络连通" class="headerlink" title="5.网络连通"></a>5.网络连通</h3><p>docker0和自定义网络肯定不通，我们使用自定义网络的好处就是网络隔离。</p>
 <p>但是在实际的工作中，比如我们部署了mysql使用了一个网段。部署了tomcat使用了另一个网段，两个网段之间肯定是不能相互连通的，但是tomcat和mysql又需要相互连通，我们就要使用网络连通。原理图如下：</p>
-<p><img src="https://mmbiz.qpic.cn/mmbiz_png/fEsWkVrSk57LEFac78iab97vUUjticT7O4z3crNmzezhCLqVcnbExkricpHKXN0Wj7ShmdJQ3kGrdErzAYApXnxmw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="图片"></p>
+<p><img src="image-20230516102548258.png" alt="image-20230516102548258"></p>
 <p><img src="image-20230426103919180.png" alt="image-20230426103919180"></p>
 <p>网络连通就是将一个容器和一个网段之间的连通。</p>
 <p>比如我前面使用的默认docker0的tomcat01，需要连接到mynet网络。</p>
