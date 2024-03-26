@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>说说springboot中的@SpringBootApplication注解 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">说说springboot中的@SpringBootApplication注解</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">July 19, 2023&nbsp;&nbsp;16:54:08</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/SpringBoot/">SpringBoot</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>spring boot 它的设计目的就是为例简化开发，开启了各种自动装配，你不想写各种配置文件，引入相关的依赖就能迅速搭建起一个web工程。它采用的是建立生产就绪spring应用程序观点，约定优先于配置的惯例。</p>
+</blockquote>
+<p><img src="image-20210719171230987.png"></p>
+<p>我们会发现所有的SpringBoot项目的启动类上都会有一个@SpringBootApplication注解，在这个注解中，有三个最重要的注解：</p>
+<h3 id="1-SpringBootConfiguration"><a href="#1-SpringBootConfiguration" class="headerlink" title="1. @SpringBootConfiguration"></a>1. @SpringBootConfiguration</h3><p>​        @SpringBootConfiguration继承自@Configuration，二者功能也一致，标注当前类是配置类，<br>并会将当前类内声明的一个或多个以@Bean注解标记的方法的实例纳入到spring容器中，并且实例名就是方法名。</p>
+<h3 id="2-EnableAutoConfiguration"><a href="#2-EnableAutoConfiguration" class="headerlink" title="2. @EnableAutoConfiguration"></a>2. @EnableAutoConfiguration</h3><p>​        从字面上看是自动配置的意思，为什么SpringBoot不需要像SSM,SSH那样书写繁多的配置文件就能达到目的呢？答案就在这里。</p>
+<p><img src="image-20210719222018146.png"></p>
+<p>​        通过查看源码我们可以发现，该注解上主要有两个注解在起作用：</p>
+<p>@AutoConfigurationPackage注解的作用是将 添加该注解的类所在的package 作为 自动配置package 进行管理，也就是说当SpringBoot应用启动时默认会将启动类所在的package作为自动配置的package。</p>
+<p>@Import注解的作用是注册bean对象，起着和@Component和@Configuration+@Bean一样的作用，AutoConfigurationImportSelector的作用是扫描META-INF目录下面的spring.factories文件，返回里面配置类的权限类名数组，配合@Import注解将这些类注册到spring容器里面。</p>
+<h3 id="3-ComponentScan"><a href="#3-ComponentScan" class="headerlink" title="3. @ComponentScan"></a>3. @ComponentScan</h3><p>​        这个注解起到了包扫描的作用，默认扫描当前类所在的包以及所在的子包。</p>
+<p><img src="image-20210719211256506.png" alt="image-20210719211256506"></p>
+<p>​        我们通过查看源码可以发现，@ComponentScan里面有个@excludeFilters注解，里面去除了两个过滤器：AutoConfigurationExcludeFilter的作用是声明不用去扫描自动配置的类，因为在@EnableAutoConfiguration注解中已经说到，这个注解就是去扫描所有的配置类，所有这里不用进行二次扫描。</p>
+<p>利用TypeExcludeFilter我们可以自定义不扫描哪些类，继承TypeExcludeFilter重写match方法，在该方法里我们可以自定义规则。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"># 学习笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2023/10/17/MapperScan%E6%B3%A8%E8%A7%A3%E5%8E%9F%E7%90%86%E5%88%86%E6%9E%90/">MapperScan注解原理分析</a>
+            
+            
+            <a class="next" rel="next" href="/2023/06/03/Java%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%AD%A6%E4%B9%A0/">Java线程池学习</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2024 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>mybatis的缓存机制 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">mybatis的缓存机制</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">August 4, 2022&nbsp;&nbsp;21:48:50</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/mybatis/">mybatis</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>mybatis分一级缓存和二级缓存，如下图，是mybatis一级缓存和二级缓存的区别图解：</p>
+</blockquote>
+<p><img src="image-20210405111938621.png" alt="image-20210405111938621"></p>
+<h3 id="一级缓存"><a href="#一级缓存" class="headerlink" title="一级缓存"></a>一级缓存</h3><p>Mybatis的一级缓存是默认开启的，作用域是同一个SqlSession，当参数和SQL完全相同的情况下，使用同一个SqlSession对象调用同一个Mapper方法，当第1次执行SQL语句后，MyBatis会自动将其放在缓存中，后续再次查询时，如果没有声明需要刷新，且缓存没有超时，会直接取出此前缓存的数据，而不会再次发送SQL到数据库。从而提高查询效率。当 Session flush 或 close 之后，该Session中的所有 Cache 就将清空。</p>
+<p>这里使用同一个sqlSession对象去查询两次，并且比较查询出来的对象是否是同一个，即比较内存地址。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) throws  Exception&#123;</span><br><span class="line">        InputStream inputStream &#x3D; null;</span><br><span class="line">        SqlSession sqlSession &#x3D; null;</span><br><span class="line">        try &#123;</span><br><span class="line">            inputStream &#x3D; Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);</span><br><span class="line">            SqlSessionFactory sqlSessionFactory &#x3D; new SqlSessionFactoryBuilder().build(inputStream);</span><br><span class="line">            sqlSession &#x3D; sqlSessionFactory.openSession();</span><br><span class="line">            UserDao userDao &#x3D; sqlSession.getMapper(UserDao.class);</span><br><span class="line">            System.out.println(&quot;第一次查询&quot;);</span><br><span class="line">            List&lt;User&gt; user1 &#x3D; userDao.getAllUser();</span><br><span class="line">            for (User user : user1) &#123;</span><br><span class="line">                System.out.println(user);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(&quot;第二次查询&quot;);</span><br><span class="line">            List&lt;User&gt; user2 &#x3D; userDao.getAllUser();</span><br><span class="line">            for (User user : user2) &#123;</span><br><span class="line">                System.out.println(user);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(&quot;是同一个对象:&quot;+(user1&#x3D;&#x3D;user2));</span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; finally &#123;</span><br><span class="line">            closeResource(sqlSession, inputStream);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>从下图可以看出，第一次查询打印了sql,说明第一次查询去数据库中查出来了数据，第二次查询没有去数据库中查询数据，而是直接从缓存中获取。并且两次查询的结果是同一个对象。</p>
+<p><img src="image-20210405100732772.png" alt="image-20210405100732772"></p>
+<h3 id="二级缓存"><a href="#二级缓存" class="headerlink" title="二级缓存"></a>二级缓存</h3><p>Mybatis二级缓存的作用域是同一个Mapper，二级缓存开启后，同一个namespace下的所有操作语句，都影响着同一个Cache，即二级缓存被多个SqlSession共享，是一个全局的变量。所以二级存储也称之为<code>namespace</code>缓存！二级缓存需要进行配置开启。</p>
+<p>ps：MyBatis默认实现的一二级缓存是使用HashMap存储的。只有当sqlSession关闭之后，该sqlSession的查询结果才会存入二级缓存中。</p>
+<h4 id="二级缓存的使用"><a href="#二级缓存的使用" class="headerlink" title="二级缓存的使用"></a>二级缓存的使用</h4><p>1.修改配置文件mybatis-config.xml加入&lt;setting name=”cacheEnabled”value=”true”/&gt;，由于默认是true，所以不添加也可以。</p>
+<p>2.在mapper.xml中开启二缓存，mapper.xml下的sql执行完成会存储到它的缓存区,如：</p>
+<p><img src="image-20210405101604917.png" alt="image-20210405101604917"></p>
+<p>3.对应的pojo实现序列化(implements Serializable)。</p>
+<p>这里使用两个不同的sqlSession去获取mapper对象，调用同一个查询方法：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">public static void main(String[] args) &#123;</span><br><span class="line">       InputStream inputStream &#x3D; null;</span><br><span class="line">       SqlSession sqlSession1 &#x3D; null;</span><br><span class="line">       SqlSession sqlSession2 &#x3D; null;</span><br><span class="line">       try &#123;</span><br><span class="line">           inputStream &#x3D; Resources.getResourceAsStream(&quot;mybatis-config.xml&quot;);</span><br><span class="line">           SqlSessionFactory sqlSessionFactory &#x3D; new SqlSessionFactoryBuilder().build(inputStream);</span><br><span class="line">           sqlSession1 &#x3D; sqlSessionFactory.openSession();</span><br><span class="line">           sqlSession2 &#x3D; sqlSessionFactory.openSession();</span><br><span class="line">           UserDao userDao1 &#x3D; sqlSession1.getMapper(UserDao.class);</span><br><span class="line">           UserDao userDao2 &#x3D; sqlSession2.getMapper(UserDao.class);</span><br><span class="line">           System.out.println(&quot;第一次查询&quot;);</span><br><span class="line">           List&lt;User&gt; user1 &#x3D; userDao1.getAllUser();</span><br><span class="line">           for (User user : user1) &#123;</span><br><span class="line">               System.out.println(user);</span><br><span class="line">           &#125;</span><br><span class="line">           System.out.println(&quot;第二次查询&quot;);</span><br><span class="line">           List&lt;User&gt; user2 &#x3D; userDao2.getAllUser();</span><br><span class="line">           for (User user : user2) &#123;</span><br><span class="line">               System.out.println(user);</span><br><span class="line">           &#125;</span><br><span class="line">           System.out.println(&quot;是同一个对象:&quot;+(user1&#x3D;&#x3D;user2));</span><br><span class="line">       &#125; catch (Exception e) &#123;</span><br><span class="line">           e.printStackTrace();</span><br><span class="line">       &#125; finally &#123;</span><br><span class="line">           closeResource(inputStream,sqlSession1,sqlSession2);</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>但是发现第二次查询还是去查询的数据库，并没有走缓存，因为第一个sqlSession1并没有关闭，查询结果并不会被序列化并保存到二级缓存，这里其实先去查询了二级缓存</p>
+<p>Cache Hit Ratio [com.test.dao.UserDao]: 0.0），表示命中次数与查询次数的比值。</p>
+<p><img src="image-20210405103056822.png" alt="image-20210405103056822"></p>
+<p>关闭sqlSession1，sqlSession1.close()，继续查看日志，可以看到第二次查询命中了二级缓存，命中一次/查询两次=0.5。</p>
+<p><img src="image-20210405105329683.png" alt="image-20210405105329683"></p>
+<p>但是我们可以发现两次查询出来的对象不是同一个，难道不是查的缓存吗，其实是cache中的readOnly属性在启作用：</p>
+<p>readOnly 为只读属性， 默认为 false</p>
+<p>false: 可读写， 在创建对象时， 会通过反序列化得到缓存对象的拷贝。 因此在速度上会相对慢一点， 但重在安全。</p>
+<p>true: 只读， 只读的缓存会给所有调用者返回缓存对象的相同实例。 因此性能很好， 但如果修改了对象， 有可能会导致程序出问题。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>1.在开启二级缓存的情况下：</p>
+<p>在同一个Mapper二级缓存里面，执行多次sql语句的情况是：首先查找二级缓存里面是否有数据，如果没有就找一级缓存，再没有，才会查找数据库。</p>
+<p>2.在二级缓存没有开启的情况下：</p>
+<p>查找数据的顺序是：查看一级缓存里面是否能够找到，找不到就在数据库里面找！！</p>
+<p>3.当为select语句时：</p>
+<p>flushCache默认为false，表示任何时候语句被调用，都不会去清空本地缓存和二级缓存。</p>
+<p>useCache默认为true，表示会将本条语句的结果进行二级缓存。</p>
+<p>4.当为insert、update、delete语句时：</p>
+<p>flushCache默认为true，表示任何时候语句被调用，都会导致本地缓存和二级缓存被清空。</p>
+<h3 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h3><p>由于在更新时会刷新缓存， 因此需要注意使用场合：查询频率很高， 更新频率很低时使用， 即经常使用 select, 相对较少使用delete, insert, update。</p>
+<p>缓存是以 namespace 为单位的，不同 namespace 下的操作互不影响。但刷新缓存是刷新整个 namespace 的缓存， 也就是你 update 了一个， 则整个缓存都刷新了。</p>
+<p>一二级缓存都可能会导致脏读（缓存不一样），二级缓存中，最好在 「只有单表操作」 的表的 namespace 使用缓存， 而且对该表的操作都在这个 namespace 中。 否则可能会出现数据不一致的情况（脏读）。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"># 学习笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2022/08/05/Autowired%E5%92%8CResource%E7%9A%84%E5%8C%BA%E5%88%AB/">Autowired和Resouce的区别</a>
+            
+            
+            <a class="next" rel="next" href="/2022/06/02/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1/">Mysql之事务</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2024 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

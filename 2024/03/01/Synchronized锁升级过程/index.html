@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>Synchronized锁升级过程 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Synchronized锁升级过程</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">March 1, 2024&nbsp;&nbsp;10:21:57</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Java/">Java</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="锁升级过程"><a href="#锁升级过程" class="headerlink" title="锁升级过程"></a>锁升级过程</h3><p>synchronized锁升过程：偏向锁-&gt;轻量级锁-&gt;重量级锁。</p>
+<p><img src="07196981feacd8512e1104c459c492a8_20210421083553896.png" alt="07196981feacd8512e1104c459c492a8_20210421083553896"></p>
+<h3 id="锁升级流程"><a href="#锁升级流程" class="headerlink" title="锁升级流程"></a>锁升级流程</h3><p>synchronized锁升级的具体流程如图所示。</p>
+<p><img src="1.png" alt="1"></p>
+<h4 id="偏向锁-gt-轻量级锁"><a href="#偏向锁-gt-轻量级锁" class="headerlink" title="偏向锁-&gt;轻量级锁"></a>偏向锁-&gt;轻量级锁</h4><p>​        线程A请求synchronized对象，比较同步块对象存储的线程S ID与线程A ID是否相同，如果相同，那么执行同步块，无需使用CAS加锁或解锁；如果不同，那么检查synchronized对象中记录的线程S是否存活，如果线程S未存活，那么synchronized对象被重置为无锁状态，线程A通过竞争将其设置为偏向锁，此时，synchronized对象头中存储线程A的ID，如果线程S存活，那么查找线程S的栈帧信息，如果线程S仍要继续持有该synchronized对象，那么暂停线程S，撤销偏向锁，升级为轻量级锁，如果线程S不再使用该synchronized对象，将synchronized对象设为无锁状态，重新偏向线程A。</p>
+<h4 id="轻量级锁-gt-重量级锁"><a href="#轻量级锁-gt-重量级锁" class="headerlink" title="轻量级锁-&gt;重量级锁"></a>轻量级锁-&gt;重量级锁</h4><p>​        线程A获取轻量级锁时先将synchronized锁的对象头复制一份到线程A在栈帧中创建的存储锁记录空间，然后使用CAS将对象头中的内容替换为线程A存储的所记录地址。如果线程A复制对象头时，线程B也准备获取锁，复制对象头到线程B的锁记录空间，当线程B进行CAS时发现，线程A已经将对象头替换，线程B的CAS失败，线程B尝试使用自旋等待线程A释放锁。如果线程B自旋次数到了上限，线程A仍没有释放锁，线程B仍在自选等待，此时，线程C又来竞争锁对象，轻量级锁会膨胀为重量级锁。重量级锁将未获得锁的线程阻塞，不消耗CPU，防止CPU空运行。</p>
+<h3 id="锁信息存储位置"><a href="#锁信息存储位置" class="headerlink" title="锁信息存储位置"></a>锁信息存储位置</h3><p>锁：为对象加锁，因此，锁信息存储在对象中，而对象中是在哪里存储呢？<br>首先了解：对象结构<a target="_blank" rel="noopener" href="https://blog.csdn.net/Xin_101/article/details/117568632">https://blog.csdn.net/Xin_101/article/details/117568632</a><br>锁信息存储在对象头MarkWord中。</p>
+<h3 id="为什么要使用重量级锁"><a href="#为什么要使用重量级锁" class="headerlink" title="为什么要使用重量级锁"></a>为什么要使用重量级锁</h3><p>因为轻量级锁（自旋锁CAS）在自旋等待时会占用CPU资源，竞争的锁（线程）越多，CPU消耗越大，容易导致CPU过载。</p>
+<h3 id="为什么使用偏向锁或轻量级锁"><a href="#为什么使用偏向锁或轻量级锁" class="headerlink" title="为什么使用偏向锁或轻量级锁"></a>为什么使用偏向锁或轻量级锁</h3><p>效率高。</p>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><table>
+<thead>
+<tr>
+<th align="center">序号</th>
+<th align="center">锁</th>
+<th align="center">优点</th>
+<th align="center">缺点</th>
+<th align="center">应用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1</td>
+<td align="center">偏向锁</td>
+<td align="center">避免CAS，无需加锁或解锁，和非同步方法时间相差纳秒级别</td>
+<td align="center">竞争的线程较多时，会带来额外的锁撤销消耗</td>
+<td align="center">基本没有线程竞争的同步场景</td>
+</tr>
+<tr>
+<td align="center">2</td>
+<td align="center">轻量级锁</td>
+<td align="center">竞争的线程不会阻塞，使用自旋，提高程序响应速度</td>
+<td align="center">长时间自旋，CPU消耗较多</td>
+<td align="center">少量线程竞争锁对象，并且线程持久锁时间不长，追求响应速度的场景</td>
+</tr>
+<tr>
+<td align="center">3</td>
+<td align="center">重量级锁</td>
+<td align="center">竞争的线程阻塞，不会导致CPU空运行，节约CPU资源</td>
+<td align="center">线程阻塞，响应时间长</td>
+<td align="center">很多线程竞争锁，并且锁持有时间较长，追求吞吐量的场景</td>
+</tr>
+</tbody></table>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"># 学习笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2024/03/16/ThreadLocal/">ThreadLocal</a>
+            
+            
+            <a class="next" rel="next" href="/2024/02/27/%E6%AD%BB%E9%94%81/">死锁</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2024 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="zmq">
+
+
+
+    <meta name="description" content="zmq的个人博客">
+
+
+
+<title>Java中的String类 | Go for it! Just do it!</title>
+
+
+
+    <link rel="icon" href="/plane.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 5.4.0"></head>
+<body>
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">zmq&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">zmq&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/category/">Categories</a>
+                
+                    <a class="menu-item" href="/tag/">Tags</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+        <div class="main">
+            <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    document.ready(
+        function () {
+            tocbot.init({
+                tocSelector: '.tocbot-list',
+                contentSelector: '.post-content',
+                headingSelector: 'h1, h2, h3, h4, h5',
+                collapseDepth: 1,
+                orderedList: false,
+                scrollSmooth: true,
+            })
+        }
+    )
+
+    function expand_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 6,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "collapse_toc()");
+        b.innerHTML = "Collapse all"
+    }
+
+    function collapse_toc() {
+        var b = document.querySelector(".tocbot-toc-expand");
+        tocbot.init({
+            tocSelector: '.tocbot-list',
+            contentSelector: '.post-content',
+            headingSelector: 'h1, h2, h3, h4, h5',
+            collapseDepth: 1,
+            orderedList: false,
+            scrollSmooth: true,
+        });
+        b.setAttribute("onclick", "expand_toc()");
+        b.innerHTML = "Expand all"
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Java中的String类</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">zmq</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 1, 2022&nbsp;&nbsp;14:11:30</a>
+                        </span>
+                    
+                    
+                        <span class="post-category">
+                    Category:
+                            
+                                <a href="/categories/Java/">Java</a>
+                            
+                        </span>
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h3 id="String可变吗？"><a href="#String可变吗？" class="headerlink" title="String可变吗？"></a>String可变吗？</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">public class Test1 &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        String str &#x3D; &quot;0000&quot;;</span><br><span class="line">        str &#x3D; &quot;1111&quot;;</span><br><span class="line">        System.out.println(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​        我们都知道Java中的String是不可变的, 那上面段代码应该输出：0000, 这样才和不变性吻合。可实际上是这样吗, 并不是, 事实上输出的是：1111。那这是不是和不变性的说法冲突了呢？我们先来看下面一段话：</p>
+<blockquote>
+<p>其实在JVM的运行中，会单独给一块地分给String。我们知道字符串的分配和其他对象分配一样，是需要消耗高昂的时间和空间的，而且字符串我们使用的非常多。JVM为了提高性能和减少内存的开销，在实例化字符串的时候进行了一些优化：</p>
+<p>使用字符串常量池。每当我们创建字符串常量时，JVM会首先检查字符串常量池，如果该字符串已经存在常量池中，那么就直接返回常量池中的实例引用。如果字符串不存在常量池中，就会实例化该字符串并且将其放到常量池中。由于String字符串的不可变性我们可以十分肯定常量池中一定不存在两个相同的字符串。</p>
+</blockquote>
+<p>​        在上面的代码中，首先会先去JVM的常量池中查找有没有”0000”这个对象，如果找到了，直接将该对象的引用地址赋值给str。找不到的话会创建一个对象，并且将其引用赋给str, str = “1111”也是同理。所以str实际上保存的是字符串在内存中的地址，str只是一个引用变量，真正不可变的是”0000”。</p>
+<h3 id="String为什么是不可变的"><a href="#String为什么是不可变的" class="headerlink" title="String为什么是不可变的?"></a>String为什么是不可变的?</h3><p>我们来看看他的源码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">public final class String</span><br><span class="line">    implements java.io.Serializable, Comparable&lt;String&gt;, CharSequence &#123;</span><br><span class="line">    &#x2F;** The value is used for character storage. *&#x2F;</span><br><span class="line">    private final char value[];</span><br><span class="line">    </span><br><span class="line">    public String(String original) &#123;</span><br><span class="line">        this.value &#x3D; original.value;</span><br><span class="line">        this.hash &#x3D; original.hash;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>从上面的这段源码中可以看出三点：</p>
+<blockquote>
+<p>String 类是final修饰</p>
+<p>String存储内容使用的是char数组</p>
+<p>char数组是final修饰</p>
+</blockquote>
+<p>所以，实际上我们在创建一个String对象的时候，内容被保存在了char数组中，而由于char数组被final修饰，所以不可变。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class Test1 &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">        &#x2F;&#x2F;String str &#x3D; &quot;0000&quot;;相当于</span><br><span class="line">        char[] value &#x3D; new char[]&#123;&#39;0&#39;,&#39;0&#39;,&#39;0&#39;,&#39;0&#39;&#125;;</span><br><span class="line">        String str &#x3D; new String(value);</span><br><span class="line">        &#x2F;&#x2F;str &#x3D; &quot;1111&quot;;</span><br><span class="line">        char[] value1 &#x3D; new char[]&#123;&#39;1&#39;,&#39;1&#39;,&#39;1&#39;,&#39;1&#39;&#125;;</span><br><span class="line">        str &#x3D; new String(value1);</span><br><span class="line">        System.out.println(str);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>这里复习一下，final有啥用</p>
+</blockquote>
+<p>当用final修饰一个类时，表明这个类不能被继承。也就是说，如果一个类你永远不会让他被继承，就可以用final进行修饰。final类中的成员变量可以根据需要设为final，但是要注意final类中的所有成员方法都会被隐式地指定为final方法。</p>
+<p>当final修饰的方法表示此方法已经是“最后的、最终的”含义，亦即此方法不能被重写（可以重载多个final修饰的方法）。此处需要注意的一点是：因为重写的前提是子类可以从父类中继承此方法，如果父类中final修饰的方法同时访问控制权限为private，将会导致子类中不能直接继承到此方法，因此，此时可以在子类中定义相同的方法名和参数，此时不再产生重写与final的矛盾，而是在子类中重新定义了新的方法。（注：类的private方法会隐式地被指定为final方法。）</p>
+<p>当final修饰一个基本数据类型时，表示该基本数据类型的值一旦在初始化后便不能发生变化。如果final修饰一个引用类型时，则在对其初始化之后便不能再让其指向其他对象了，但该引用所指向的对象的内容是可以发生变化的。本质上是一回事，因为引用的值是一个地址，final要求值，即地址的值不发生变化。另外final修饰一个成员变量（属性），必须要显示初始化。这里有两种初始化方式，（在申明的时候给其赋值，否则必须在其类的所有构造方法中都要为其赋值）</p>
+<h3 id="再来看一个String的案例"><a href="#再来看一个String的案例" class="headerlink" title="再来看一个String的案例"></a>再来看一个String的案例</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">public class Test1 &#123;</span><br><span class="line">    public static void main(String[] args) &#123;</span><br><span class="line">       String str &#x3D; &quot;Hello World&quot;;</span><br><span class="line">       System.out.println(str);</span><br><span class="line">       </span><br><span class="line">       str.substring(0,str.indexOf(&quot;W&quot;));</span><br><span class="line">       System.out.println(str);</span><br><span class="line"></span><br><span class="line">       System.out.println(str.substring(0,str.indexOf(&quot;W&quot;)));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出：</p>
+<p><img src="1.png"></p>
+<p>无论是concat、replace、substring还是trim方法的操作都不是在原有的字符串上进行的，而是重新生成了一个新的字符串对象。也就是说进行这些操作后，最原始的字符串并没有被改变。这里踩过几个坑。。。</p>
+<p>得出两个结论：</p>
+<ol>
+<li><p>String对象一旦被创建就是固定不变的了，对String对象的任何改变都不影响到原对象，相关的任何变化性的操作都会生成新的对象。</p>
+</li>
+<li><p>String对象每次有变化性操作的时候，都会重新new一个String对象（这里指的是有变化的情况）。</p>
+</li>
+</ol>
+<h3 id="finally-探究下String-s-new-String-“111”-会创建几个对象？"><a href="#finally-探究下String-s-new-String-“111”-会创建几个对象？" class="headerlink" title="finally, 探究下String s = new String(“111”)会创建几个对象？"></a>finally, 探究下String s = new String(“111”)会创建几个对象？</h3><p>接触Java后都知道可以new一个对象。所以 String s = new String(“111”);就是创建一个对象然后把对象引用地址赋给变量s。但是这里有个特殊点，那就是（“111”）,这里会先去JVM里的那块常量池里找找有没有这个对象，找到了直接将引用地址赋给String的构造方法。找不到就创建一个对象然后把引用地址给String的有参构造方法。</p>
+<p>所以答案是:</p>
+<p>​    如果常量池中存在，则只需创建一个对象，否则需要创建两个对象。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                
+                
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/"># 学习笔记</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2022/06/02/mysql%E4%B9%8B%E4%BA%8B%E5%8A%A1/">Mysql之事务</a>
+            
+            
+            <a class="next" rel="next" href="/2022/01/05/%E6%90%AD%E5%BB%BAFastDfs%E5%88%86%E5%B8%83%E5%BC%8F%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86%E7%B3%BB%E7%BB%9F/">搭建FastDFS分布式文件管理系统</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+        </div>
+        <footer id="footer" class="footer">
+
+    <div class="copyright">
+        <span>© 2024 | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+		<span>赣ICP备2020010454号</span> 
+    </div>
+</footer>
+
+    </div>
+</body>
+</html>
